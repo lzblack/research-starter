@@ -1,0 +1,29 @@
+project:
+  type: default
+  render:
+    - paper.qmd
+  output-dir: _output
+
+title: "@@name@@"
+author:
+  @@list:authors@@
+lang: "@@language@@"
+number-sections: true
+bibliography: references.bib
+@@if csl@@
+csl: "@@writing.csl@@"
+@@end@@
+
+execute:
+  enabled: false
+
+format:
+@@if docx@@
+  docx:
+    output-file: "@@slug@@.docx"
+@@end@@
+@@if pdf@@
+  typst:
+    output-file: "@@slug@@.pdf"
+    citeproc: true
+@@end@@

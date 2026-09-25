@@ -1,0 +1,18 @@
+# Environment and secrets
+.venv/
+.env
+
+# Build outputs and logs (committing a rendered document is a release decision)
+.build/
+logs/
+paper/_output/
+paper/.quarto/
+
+# Material that may not belong in the repository (see README)
+meetings/raw/
+private/
+
+# Tool caches
+__pycache__/
+__marimo__/
+.DS_Store

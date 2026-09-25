@@ -222,3 +222,6 @@ __marimo__/
 
 # Session notes for this repository, kept local
 journal/
+
+# Template content is tracked in full; the patterns above apply to this repository's own files.
+!/template/**

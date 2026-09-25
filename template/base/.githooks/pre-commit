@@ -1,0 +1,3 @@
+#!/bin/sh
+# Pre-commit hook. The data-exposure checks are added here with the build entry point.
+exit 0
