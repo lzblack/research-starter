@@ -7,7 +7,7 @@ authors:
     given-names: Zhi
 repository-code: "https://github.com/lzblack/research-starter"
 license: MIT
-version: "0.1.0"
+version: "0.1.1"
 date-released: "2026-09-25"
 keywords:
   - research template
