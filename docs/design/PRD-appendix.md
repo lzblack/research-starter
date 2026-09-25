@@ -144,31 +144,48 @@ Cross-field rules:
 Answer values are data. They are never passed to a shell, never evaluated as template expressions,
 and never used as a path without validation.
 
+Template tree:
+
+- `template/base/` is always copied.
+- `template/if-<flag>/` is copied when the flag (A2.1) is true, and `template/if-not-<flag>/` when
+  it is false. A path produced by two of these directories is a template error.
+- `template/parts/` holds per-item templates: `section.qmd.tmpl`, rendered once per section into
+  `paper/sections/<id>.qmd`, and `template-provenance.md.tmpl`, rendered into the template
+  provenance record (A6.3).
+- Only files ending in `.tmpl` are processed, and they are written without that suffix. Every
+  other file is copied byte for byte with its executable bit. Symbolic links are template errors.
+
 Template files use three constructs, applied in this order:
 
-1. Conditional blocks: lines `@@if <flag>@@` and `@@end@@` enclose content kept only when the flag
-   (A2.1) is true. No other expressions exist. Conditionals are resolved on the template text before
-   any answer value is inserted.
-2. List expansions: a line consisting only of `@@list:<name>@@` is replaced by the lines in the
-   table below, in the stated order. An empty list produces no lines.
-3. Scalar placeholders: `@@<field.path>@@` is replaced by the answer value, and `@@section.id@@` by
-   the section ID in a section file (below). Substitution is a single
-   pass, and inserted text is never scanned again, so a value containing `@@...@@` stays literal.
+1. Conditional blocks: lines `@@if <flag>@@` or `@@if not <flag>@@`, closed by `@@end@@`, keep the
+   enclosed lines only when the condition holds. Blocks may nest. No other expressions exist.
+   Conditionals are resolved on the template text before any answer value is inserted.
+2. List expansions: a line consisting only of optional indentation and `@@list:<name>@@` is replaced
+   by the lines in the table below, each with that indentation, in the stated order. An empty list
+   produces no lines.
+3. Scalar placeholders: `@@<name>@@` is replaced by the value. A placeholder written directly
+   inside double quotes, `"@@<name>@@"`, is replaced together with its quotes by a double-quoted
+   string with the value escaped, which is valid in both YAML and TOML. YAML and TOML template files
+   use only this quoted form. A bare placeholder is replaced by the value as written.
+
+List expansion and scalar substitution happen in one pass over each line, and inserted text is
+never scanned again, so a value containing `@@...@@` stays literal.
+
+Scalar names are the answer fields (for example `name`, `slug`, `writing.csl`,
+`data.large_store`), `generated.date`, `generated.template_commit`, `template.url`, `lead.name`,
+and `lead.github`. The section template also has `section.id` and `section.title` (the ID with
+hyphens as spaces and the first letter in upper case), and the flags `section.first` and
+`section.human_drafted`.
 
 | List | One item per | Line format | Order |
 |---|---|---|---|
-| `authors` | person | YAML list item with the person's name | `people` order |
-| `section-includes` | section | `{{< include sections/<id>.qmd >}}` | `writing.sections` order |
+| `authors` | person | YAML list item with the person's name, quoted | `people` order |
+| `section-includes` | section | `{{< include sections/<id>.qmd >}}` followed by an empty line | `writing.sections` order |
 | `human-drafted` | human-drafted section | Markdown bullet with the section ID | `writing.sections` order |
 | `review-gates` | gate | Markdown bullet with the gate ID | `review_gates` order |
 | `codeowners` | distinct `reviews` pattern | `<pattern> @<handle> ...` listing every person who reviews exactly that pattern | first appearance in `people` order, then pattern order |
 
-Each section file `paper/sections/<id>.qmd` is copied from one section template with
-`@@section.id@@` filled.
-
-Values are encoded for the file they land in: YAML files receive serializer-quoted scalars, TOML
-files receive TOML strings, and Markdown receives the text as written. `project_rules` is inserted
-verbatim between fixed begin and end marker lines in `AGENTS.md`.
+`project_rules` is inserted verbatim between fixed begin and end marker lines in `AGENTS.md`.
 
 Path patterns (`owns`, `reviews`, dataset `paths`):
 
@@ -179,23 +196,24 @@ Path patterns (`owns`, `reviews`, dataset `paths`):
   the repository root.
 - `*` and `**` have their CODEOWNERS meanings.
 
-A template file whose name ends in `.tmpl` is written without that suffix.
-
 ### A1.5 Preconditions and target rules
 
 `generate` fails with code 5, writing nothing, when:
 
 - git or uv is missing from `PATH`;
-- the template checkout has uncommitted changes and `--allow-dirty` is not given;
-- the target does not exist;
-- the target has no `project.yml` and contains entries other than `.git/` and `.DS_Store`, since
-  adding the template to an existing project is adoption mode (deferred, PRD section 19a);
+- the files setup reads (`template/`, `starter/`, `new_project.py`) have uncommitted changes and
+  `--allow-dirty` is not given;
+- the target does not exist, or lies inside the template checkout;
+- the target has no `project.yml` and contains entries other than `.git/`, `.DS_Store`, and
+  leftover temporary files of an interrupted run, since adding the template to an existing project
+  is adoption mode (deferred, PRD section 19a);
 - the target's git repository already has commits and no `project.yml`;
 - the target has a `project.yml` whose answers differ from the normalized answers, or whose
   `generated` values differ from this run's template commit or explicit `--date` (A3.2).
 
 `generate` writes `project.yml` first. If the target has no git repository, `generate` initializes
-one with the unborn default branch `main`. It sets `core.hooksPath` to `.githooks` (A7.1). It adds
+one with the unborn default branch `main`; an existing repository without commits is switched to
+`main`. It sets `core.hooksPath` to `.githooks` (A7.1). It adds
 every path it reports as `create` or `same` to the index. It does not commit; the agent makes the
 initial commit after the local acceptance checks pass (PRD section 4, step 6).
 
@@ -240,6 +258,7 @@ commit again.
 | `csl` | `writing.csl` | true if non-empty |
 | `human_drafted` | `writing.human_drafted` | true if non-empty |
 | `review_gates` | `review_gates` | true if non-empty |
+| `large_store` | `data.large_store` | true if non-empty |
 
 In schema 1 the collaboration module is derived from `mode` and cannot be set on its own. `modules`
 stays in the schema for modules added later and must be empty.
@@ -836,7 +855,9 @@ Configuration, sign-off, and releases:
   and manual entries are both allowed.
 - Citation keys match `^[A-Za-z][A-Za-z0-9_-]*$` and are unique regardless of case.
 - `lit/<citation key>.md` holds literature notes, one file per work, optional.
-- `paper/reference.docx` is the reference document that styles docx output.
+- `paper/reference.docx`, if a project adds one, is the reference document that styles docx
+  output. The template ships none, so Quarto's default docx styles apply. Pandoc's own default
+  reference document is licensed under the GPL, which the MIT-0 template cannot carry.
 
 ### A8.2 Verification status
 
