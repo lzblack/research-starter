@@ -48,6 +48,7 @@ SECRET_PATTERNS = {
     "secret assignment": re.compile(r"^\s*(?:export\s+)?[A-Z0-9_]*(?:_API_KEY|_SECRET|_TOKEN)\s*=\s*['\"]?[^\s'\"#]{8,}", re.M),
 }  # fmt: skip
 EMAIL = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
+EXEMPT_DOMAINS = ("example.org", "example.com", "example.net", "noreply.github.com")
 PHONE = re.compile(r"(?<![\w.])(?:\+\d{1,3}[\s-]\d{1,4}[\s-]\d{3,4}[\s-]\d{3,4}|\(\d{3}\)\s?\d{3}-\d{4}|\b\d{3}-\d{3}-\d{4}\b)")
 
 
@@ -97,7 +98,24 @@ def pattern_matches(pattern: str, path: str) -> bool:
         else:
             out.append(re.escape(body[i]))
             i += 1
-    return re.match("^" + "".join(out) + "(?:/.*)?$", path) is not None
+    last = body.rsplit("/", 1)[-1]
+    below = "" if "*" in last and last != "**" else "(?:/.*)?"
+    return re.match("^" + "".join(out) + below + "$", path) is not None
+
+
+def pattern_error(pattern: Any) -> str | None:
+    """Why a dataset path pattern is invalid (the setup rules for path patterns), or None."""
+    if not isinstance(pattern, str) or not pattern:
+        return "must be a non-empty string"
+    if not re.fullmatch(r"[A-Za-z0-9._/*-]+", pattern):
+        return "may contain only letters, digits, '.', '_', '-', '/', and '*'"
+    if pattern.startswith("/"):
+        return "must be relative (no leading '/')"
+    if ".." in pattern.split("/"):
+        return "must not contain a '..' segment"
+    if "/" not in pattern[:-1]:
+        return "must contain a '/' before its last character"
+    return None
 
 
 class Project:
@@ -460,8 +478,10 @@ def datasets(p: Project) -> Result:
         if type(d.get("raw")) is not bool:
             problems.append(f"{where}: raw must be true or false")
         paths = d.get("paths", [])
-        if not isinstance(paths, list) or not all(isinstance(x, str) and "/" in x[:-1] for x in paths):
+        if not isinstance(paths, list):
             problems.append(f"{where}: paths must be a list of repository path patterns")
+        else:
+            problems += [f"{where}: path {x!r} {pattern_error(x)}" for x in paths if pattern_error(x)]
         for key in ["location", "version"]:
             if key in d and not isinstance(d[key], str):
                 problems.append(f"{where}: {key} must be a string")
@@ -486,13 +506,25 @@ def declared_paths(p: Project) -> Result:
     files = tracked_or_untested(p, "declared-paths")
     if isinstance(files, Result):
         return files
-    guarded = [
-        (d.get("id"), pattern)
-        for d in p.datasets if isinstance(d, dict) and (d.get("raw") is True or d.get("tier") != "public")
-        for pattern in d.get("paths") or []
-    ]  # fmt: skip
-    problems = [f"{f} is at a path of dataset '{i}', which must not be committed"
-                for f in files for i, pattern in guarded if pattern_matches(pattern, f)]  # fmt: skip
+    problems, guarded = [], []
+    for d in p.datasets if isinstance(p.datasets, list) else [None]:
+        if not isinstance(d, dict):
+            problems.append("data/README.md: a dataset declaration is not a mapping")
+            continue
+        name, paths = d.get("id"), d.get("paths", [])
+        # Fail closed: a declaration this check cannot interpret must not let files through.
+        if type(d.get("raw")) is not bool:
+            problems.append(f"dataset '{name}': raw must be true or false")
+        if not isinstance(paths, list):
+            problems.append(f"dataset '{name}': paths must be a list")
+            continue
+        for pattern in paths:
+            if pattern_error(pattern):
+                problems.append(f"dataset '{name}': path {pattern!r} {pattern_error(pattern)}")
+            elif d.get("raw") is not False or d.get("tier") != "public":
+                guarded.append((name, pattern))
+    problems += [f"{f} is at a path of dataset '{i}', which must not be committed"
+                 for f in files for i, pattern in guarded if pattern_matches(pattern, f)]  # fmt: skip
     return result("declared-paths", problems)
 
 
@@ -551,7 +583,8 @@ def pii_scan(p: Project) -> Result:
         text = data.decode("utf-8", "replace")
         for label, pattern in [("email address", EMAIL), ("phone number", PHONE)]:
             for m in pattern.finditer(text):
-                if label == "email address" and m.group(0).lower().endswith(("example.org", "example.com", "noreply.github.com")):
+                domain = m.group(0).rsplit("@", 1)[-1].lower()
+                if label == "email address" and any(domain == d or domain.endswith("." + d) for d in EXEMPT_DOMAINS):
                     continue
                 problems.append(f"{f}:{text.count(chr(10), 0, m.start()) + 1}: possible {label}")
     return result("pii-scan", problems, WARN)
@@ -595,7 +628,7 @@ def run(root: Path, staged: bool = False, extra: dict[str, Check] | None = None)
     for name, func in checks:
         try:
             results.append(func(project))
-        except (OSError, UnicodeDecodeError, ValueError, YAMLError, KeyError, TypeError) as exc:
+        except (OSError, UnicodeDecodeError, ValueError, YAMLError, KeyError, TypeError, AttributeError) as exc:
             results.append(Result(name, FAIL, [f"could not run: {exc}"]))
     return results
 

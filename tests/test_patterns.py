@@ -30,3 +30,16 @@ def test_matches(pattern: str, path: str, expected: bool) -> None:
 @pytest.mark.parametrize("pattern", ["", "/a/b", "a/../b", "a b/c", "name", "dir/", "a/[x]"])
 def test_invalid(pattern: str) -> None:
     assert pattern_error(pattern) is not None
+
+
+@pytest.mark.parametrize(
+    ("pattern", "path", "expected"),
+    [
+        ("paper/*", "paper/paper.qmd", True),
+        ("paper/*", "paper/sections/intro.qmd", False),
+        ("paper/sections/*.qmd", "paper/sections/intro.qmd", True),
+        ("paper/**", "paper/sections/intro.qmd", True),
+    ],
+)
+def test_codeowners_star_semantics(pattern: str, path: str, expected: bool) -> None:
+    assert matches(pattern, path) is expected
