@@ -434,6 +434,8 @@ def stage_check(root: Path, staged: bool = False) -> None:
         print(f"{item.status} {item.check}")
         for problem in item.problems:
             print(f"  {problem}")
+    print("Data checks: configured checks passed only if none failed above. They cannot establish")
+    print("that no sensitive data exists; the owner reviews outputs before any release.")
     if not staged:
         write_crosswalk(root, checks.crosswalk(root))
     if any(item.status == "fail" for item in results):

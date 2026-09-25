@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Feedback on the research-starter template
+    url: https://github.com/lzblack/research-starter/issues/new/choose
+    about: Report problems with the template itself, or share what worked and what did not.

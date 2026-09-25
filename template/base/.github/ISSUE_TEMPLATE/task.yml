@@ -1,0 +1,10 @@
+name: Task
+description: A piece of work for a person or an agent.
+body:
+  - type: textarea
+    id: task
+    attributes:
+      label: What needs to be done
+      description: The outcome, and how to tell that it is done.
+    validations:
+      required: true
