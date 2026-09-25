@@ -39,18 +39,31 @@ Typst 0.15.1), marimo 0.25.0, git 2.43.0.
 | E10 | Without `.python-version`, uv uses an installed interpreter within the range, not the newest release | planned (scheduled) | 2026-09-24 |
 | E11 | An include inside an included section file resolves its path relative to the main document (`paper/`), not the section file | fixture CI (`render-content`) | 2026-09-24 |
 | E12 | Pushing files under `.github/workflows/` with an OAuth token needs the `workflow` scope | manual (provisioning, M5) | 2026-09-24 |
+| E13 | Claude Code reads `AGENTS.md` without `CLAUDE.md`; a `CLAUDE.md` containing `@AGENTS.md` imports it | manual (`tools/agent_smoke.py`) | 2026-09-24 |
+| E14 | Claude Code loads project skills only from `.claude/skills/` and follows a directory link to `.agents/skills`; Codex loads `.agents/skills/` and runs `$<skill>` | manual (`tools/agent_smoke.py`) | 2026-09-24 |
+| E15 | Codex's bubblewrap sandbox fails on Ubuntu 24.04 when unprivileged user namespaces are restricted by AppArmor | manual | 2026-09-24 |
 
 ## Per-agent table
 
-Values are verified in M4, not assumed (PRD section 11).
+Verified on 2026-09-24 on Linux aarch64 with `tools/agent_smoke.py` and the discovery experiments
+recorded as E13 to E15.
 
 | Field | Claude Code | Codex | pi (best-effort) |
 |---|---|---|---|
-| Instruction file discovery | unverified | unverified | unverified |
-| Condition requiring the one-line `CLAUDE.md` import, and the exact import line | unverified | n/a | n/a |
-| Skill discovery location | unverified | unverified | unverified |
-| Invocation syntax | unverified | unverified | unverified |
-| Skills read in place or copied; refresh method | unverified | unverified | unverified |
-| Tested version | unverified | unverified | unverified |
-| Smoke checks (`agent-session-start`, `agent-handoff`) | not-tested | not-tested | not-tested |
-| Last verification date | none | none | none |
+| Instruction file discovery | reads `AGENTS.md` when no `CLAUDE.md` exists | reads `AGENTS.md` | not tested (not installed) |
+| Condition requiring the one-line `CLAUDE.md` import, and the exact import line | none found in the tested configuration; the import line `@AGENTS.md` works | n/a | n/a |
+| Skill discovery location | `.claude/skills/` only; a directory link `.claude/skills -> ../.agents/skills` works | `.agents/skills/` | not tested |
+| Invocation syntax | `/<skill> [arguments]` | `$<skill> [arguments]` | not tested |
+| Skills read in place or copied; refresh method | read in place through the link; new skills appear without copying | read in place | not tested |
+| Tested version | 2.1.282 | codex-cli 0.156.1 | none |
+| Smoke checks (`agent-session-start`, `agent-handoff`) | pass, pass | pass, pass | not-tested |
+| Last verification date | 2026-09-24 | 2026-09-24 | none |
+
+Notes:
+
+- Codex's command sandbox (bubblewrap) could not start on Ubuntu 24.04 with
+  `kernel.apparmor_restrict_unprivileged_userns = 1` (E15). Skill discovery and explicit
+  invocation worked, but shell commands inside the sandbox failed. The smoke checks run Codex
+  without its sandbox, inside a temporary project only.
+- Claude Code reads user-level instructions from the home directory as well. Smoke results can
+  reflect that configuration.

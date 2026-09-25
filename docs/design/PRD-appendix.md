@@ -152,8 +152,10 @@ Template tree:
 - `template/parts/` holds per-item templates: `section.qmd.tmpl`, rendered once per section into
   `paper/sections/<id>.qmd`, and `template-provenance.md.tmpl`, rendered into the template
   provenance record (A6.3).
-- Only files ending in `.tmpl` are processed, and they are written without that suffix. Every
-  other file is copied byte for byte with its executable bit. Symbolic links are template errors.
+- Only files ending in `.tmpl` are processed, and they are written without that suffix. A file
+  ending in `.symlink` holds a relative target inside the project; setup creates a symbolic link
+  to it without the suffix. Every other file is copied byte for byte with its executable bit.
+  Symbolic links in the template tree itself are template errors.
 
 Template files use three constructs, applied in this order:
 
@@ -1130,7 +1132,12 @@ repository, created in M1. For each assumption about an external tool, it record
 The behaviors E1 to E10 are its first entries.
 
 It also holds the per-agent table below, whose values are verified in M4 and not assumed (PRD
-section 11). This appendix fixes only the table's fields.
+section 11). This appendix fixes only the table's fields. `tools/agent_smoke.py` runs the agent
+smoke checks for one agent and checks the results against A6.
+
+Skills are kept once, in `.agents/skills/`. Setup creates the link `.claude/skills ->
+../.agents/skills` for agents that read only their own directory, so skills are read in place and
+there are no copies to refresh.
 
 | Field | Claude Code | Codex | pi (best-effort) |
 |---|---|---|---|
