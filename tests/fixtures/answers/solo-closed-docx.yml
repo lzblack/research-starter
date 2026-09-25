@@ -1,0 +1,15 @@
+# Solo, closed, docx only, report type, CSL set.
+schema: 1
+name: "Synthetic Report"
+slug: solo-closed-docx
+type: report
+mode: solo
+visibility: closed
+people:
+  - name: "Researcher A"
+    role: lead
+writing:
+  formats: [docx]
+  csl: ../styles/minimal-test.csl
+data:
+  large_store: "~/synthetic-store"

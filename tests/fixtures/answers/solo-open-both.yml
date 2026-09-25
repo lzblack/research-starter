@@ -1,0 +1,17 @@
+# Solo, open, both formats, a reader, no CSL.
+schema: 1
+name: "Synthetic Solo Open Study"
+slug: solo-open-both
+description: "A synthetic project used by the template tests."
+mode: solo
+visibility: open
+people:
+  - name: "Researcher A"
+    github: researcher-a
+    role: lead
+    consent_open: true
+  - name: "Reader B"
+    role: reader
+    consent_open: true
+writing:
+  formats: [docx, pdf]

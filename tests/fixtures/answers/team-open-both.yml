@@ -1,0 +1,28 @@
+# Team, open, both formats, CSL set, section owners, overlapping review patterns.
+schema: 1
+name: "Synthetic Team Study"
+slug: team-open-both
+description: "A synthetic team project used by the template tests."
+mode: team
+visibility: open
+people:
+  - name: "Researcher A"
+    github: researcher-a
+    role: lead
+    consent_open: true
+    reviews: [paper/sections/]
+  - name: "Researcher B"
+    github: researcher-b
+    role: contributor
+    consent_open: true
+    owns: [paper/sections/data.qmd]
+    reviews: [paper/sections/results.qmd]
+  - name: "Researcher C"
+    github: researcher-c
+    role: contributor
+    consent_open: true
+    owns: [paper/sections/results.qmd]
+writing:
+  csl: ../styles/minimal-test.csl
+data:
+  large_store: "s3://example-bucket/synthetic"

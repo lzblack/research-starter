@@ -1,0 +1,21 @@
+# Team, closed, both formats, reader, human-drafted section, review gates, regional language tag.
+schema: 1
+name: "Synthetic Closed Team Study"
+slug: team-closed-both
+language: en-GB
+mode: team
+visibility: closed
+people:
+  - name: "Researcher A"
+    github: researcher-a
+    role: lead
+  - name: "Researcher B"
+    github: researcher-b
+    role: contributor
+    reviews: [paper/sections/methods.qmd]
+  - name: "Reader C"
+    role: reader
+writing:
+  sections: [introduction, methods, results, discussion]
+  human_drafted: [discussion]
+review_gates: [submission]
