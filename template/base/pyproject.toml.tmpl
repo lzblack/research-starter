@@ -3,7 +3,19 @@ name = "@@slug@@"
 version = "0.1.0"
 description = "@@description@@"
 requires-python = ">=3.12"
-dependencies = ["quarto-cli==1.10.18"]
+dependencies = [
+    "quarto-cli==1.10.18",
+    "marimo==0.25.0",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "pyarrow",
+    "ruamel.yaml",
+]
 
 [tool.uv]
 required-version = ">=0.12.18"
+
+[tool.research-starter.build]
+prepare = ["scripts/prepare_example.py"]
+analyze = ["notebooks/example.py"]

@@ -1,10 +1,18 @@
 ---
-datasets: []
+datasets:
+  - id: example
+    tier: public
+    license: MIT-0
+    raw: false
+    paths:
+      - data/derived/example.parquet
 ---
 
 # Data
 
 Declare every dataset in the front matter above, with its sensitivity tier and license.
+
+The `example` dataset is synthetic. `scripts/prepare_example.py` creates it from a fixed seed.
 @@if large_store@@
 
 Large data is kept in the configured store: @@data.large_store@@
