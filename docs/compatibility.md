@@ -15,10 +15,10 @@ Test methods:
 
 | Platform | CI runner | Status | Last verified |
 |---|---|---|---|
-| Linux x86_64 | `ubuntu-24.04` | pending first CI run | none |
-| Linux aarch64 | `ubuntu-24.04-arm` | toolchain verified locally; CI pending | 2026-09-24 (local) |
-| macOS arm64 | `macos-15` | pending first CI run | none |
-| macOS x86_64 | `macos-15-intel` | pending first CI run | none |
+| Linux x86_64 | `ubuntu-24.04` | verified (fixture CI) | 2026-09-24 |
+| Linux aarch64 | `ubuntu-24.04-arm` | verified (fixture CI and locally) | 2026-09-24 |
+| macOS arm64 | `macos-15` | verified (fixture CI) | 2026-09-24 |
+| macOS x86_64 | `macos-15-intel` | verified (fixture CI) | 2026-09-24 |
 
 ## Tool assumptions
 

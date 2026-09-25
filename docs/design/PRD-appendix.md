@@ -978,10 +978,10 @@ section 12).
 
 | Platform | CI runner | Status |
 |---|---|---|
-| Linux x86_64 | `ubuntu-24.04` | supported; not yet verified (M1) |
-| Linux aarch64 | `ubuntu-24.04-arm` | supported; toolchain verified locally on 2026-09-24 (A11.3); CI not yet run (M1) |
-| macOS arm64 | `macos-15` | supported; not yet verified (M1) |
-| macOS x86_64 | `macos-15-intel` | supported; not yet verified (M1) |
+| Linux x86_64 | `ubuntu-24.04` | supported; verified by fixture CI on 2026-09-24 |
+| Linux aarch64 | `ubuntu-24.04-arm` | supported; verified by fixture CI and locally on 2026-09-24 |
+| macOS arm64 | `macos-15` | supported; verified by fixture CI on 2026-09-24 |
+| macOS x86_64 | `macos-15-intel` | supported; verified by fixture CI on 2026-09-24 |
 
 Runner labels are taken from GitHub's documentation of hosted runners, checked on 2026-09-24.
 Versioned labels are used instead of `-latest` labels, so the tested image changes only by a
