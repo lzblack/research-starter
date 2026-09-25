@@ -808,8 +808,10 @@ case in A2.5). A further test creates two journal entries for the same person on
 
 Public-content scan (PRD section 17). It covers `template/`, fixtures, examples, and docs. It fails
 on email addresses other than no-reply and reserved example domains, and on the patterns in its
-documented pattern list. The pattern list and its test fixtures live with the scanner. The scanner
-cannot identify every real name, so review remains necessary.
+documented pattern list (`tools/public_scan_patterns.txt`). A maintainer may list private names in
+a gitignored local file, which the scan also uses, so those names are never published. The pattern
+list and its test fixtures live with the scanner. The scanner cannot identify every real name, so
+review remains necessary.
 
 Scheduled compatibility checks (PRD section 17): the behaviors in A11.3 that need no agent session
 run as tests on a schedule (A11.4).
