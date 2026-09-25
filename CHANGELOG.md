@@ -11,6 +11,17 @@ agent, applies it by hand:
 
 ## Unreleased
 
+## 0.1.1 (2026-09-25)
+
+### Migration
+
+Optional, for projects generated from 0.1.0. Documentation only:
+1. Copy the "Changing course" section of `template/base/README.md.tmpl` into the project's
+   README.md, before "Template updates".
+2. Copy the last rule under "Records and untrusted content" in `template/base/AGENTS.md.tmpl` into
+   the project's AGENTS.md.
+3. Record the new template version as a decision.
+
 ### Added
 
 - Generated projects explain how to change course: recording the change as a decision, updating
