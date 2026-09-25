@@ -141,7 +141,11 @@ def _link_target(source: Path, path: str, label: str) -> str:
     return target
 
 
-def build_plan(answers: Answers, generated: dict[str, str], template_dir: Path) -> Plan:
+def build_plan(
+    answers: Answers, generated: dict[str, str], template_dir: Path, include: set[str] | None = None
+) -> Plan:
+    """`include`, when given, lists the template files to use, as paths relative to the parent of
+    `template_dir`; files outside it (such as ignored files) are skipped."""
     n = answers.normalized
     ctx = build_context(n, generated)
     plan = Plan()
@@ -150,6 +154,8 @@ def build_plan(answers: Answers, generated: dict[str, str], template_dir: Path) 
     for root in _tree_roots(template_dir, ctx.flags):
         for source in sorted(p for p in root.rglob("*") if p.is_file() or p.is_symlink()):
             if SKIP_NAMES & set(source.relative_to(root).parts):
+                continue
+            if include is not None and source.relative_to(template_dir.parent).as_posix() not in include:
                 continue
             if source.is_symlink():
                 raise TemplateError(f"template files must not be symbolic links: {source}")

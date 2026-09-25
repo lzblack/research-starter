@@ -53,13 +53,9 @@ def _last_line(result: subprocess.CompletedProcess[str]) -> str:
 
 
 def _copy_tracked(target: Path, dest: Path) -> None:
-    listed = subprocess.run(
-        ["git", "ls-files", "-z"], cwd=target, capture_output=True, check=True
-    ).stdout.decode()
-    for rel in filter(None, listed.split("\0")):
-        source, out = target / rel, dest / rel
-        out.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, out, follow_symlinks=False)
+    """Copy the index content (A1.6), so unstaged edits and deletions do not change the result."""
+    prefix = str(dest.resolve()) + os.sep
+    subprocess.run(["git", "checkout-index", "--all", f"--prefix={prefix}"], cwd=target, check=True)
     subprocess.run(["git", "init", "-q", "-b", "main"], cwd=dest, check=True)
     subprocess.run(["git", "add", "-A"], cwd=dest, check=True)
 

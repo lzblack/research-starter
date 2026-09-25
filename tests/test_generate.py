@@ -298,3 +298,28 @@ def test_leftover_temporary_link_is_removed(template_repo: Path, answers: Path, 
     os.symlink("..", target / ".rs-tmp-link")
     assert run(template_repo, answers, target).code == 0
     assert not os.path.lexists(target / ".rs-tmp-link")
+
+
+def test_global_excludes_do_not_break_generate(
+    template_repo: Path, answers: Path, target: Path, tmp_path: Path, monkeypatch
+) -> None:
+    excludes = tmp_path / "global-excludes"
+    excludes.write_text("static.txt\n")
+    config = tmp_path / "gitconfig"
+    config.write_text(f"[core]\n\texcludesFile = {excludes}\n")
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(config))
+    outcome = run(template_repo, answers, target)
+    assert outcome.code == 0, outcome.errors
+    assert "static.txt" in git(target, "ls-files").splitlines()
+    assert run(template_repo, answers, target).code == 0
+
+
+def test_ignored_template_files_are_not_copied(template_repo: Path, answers: Path, target: Path) -> None:
+    write(template_repo / "template" / "base" / ".gitignore", "*.env\nprivate/\n")
+    git(template_repo, "add", "-A")
+    git(template_repo, "commit", "-q", "-m", "ignore rules")
+    write(template_repo / "template" / "base" / "local.env", "SECRET=1\n")
+    write(template_repo / "template" / "base" / "private" / "people.md", "names\n")
+    outcome = run(template_repo, answers, target)
+    assert outcome.code == 0, outcome.errors
+    assert not (target / "local.env").exists() and not (target / "private").exists()

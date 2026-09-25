@@ -167,3 +167,17 @@ def test_no_remote_is_not_tested(project) -> None:
     target, _ = project
     assert statuses(github_checks(target, FakeGh(), sleep=lambda s: None)) == {
         "gh-ci": "not-tested", "gh-preview": "not-tested"}  # fmt: skip
+
+
+def test_duplicate_first_tasks_create_one_issue(project) -> None:
+    target, remote = project
+    gh = FakeGh()
+    provision(target, remote, ["Same task", "Same task"], accept_local=lambda t: True, gh=gh)
+    assert [i["title"] for i in gh.issues] == ["Complete project setup", "Same task"]
+
+
+def test_refuses_with_uncommitted_changes(project) -> None:
+    target, remote = project
+    (target / "project.yml").write_text("schema: 2\n")
+    report = provision(target, remote, [], accept_local=lambda t: True, gh=FakeGh())
+    assert report.code == 4 and report.lines[0].startswith("fail confirm")
