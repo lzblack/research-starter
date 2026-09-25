@@ -11,6 +11,7 @@ import datetime
 import sys
 from pathlib import Path
 
+from starter.accept import accept
 from starter.generate import generate
 
 ROOT = Path(__file__).resolve().parent
@@ -37,7 +38,13 @@ def main(argv: list[str] | None = None) -> int:
     gen.add_argument("--dry-run", action="store_true")
     gen.add_argument("--allow-dirty", action="store_true")
 
+    acc = commands.add_parser("accept", help="run the acceptance checks on a generated project")
+    acc.add_argument("--target", required=True, type=Path)
+    acc.add_argument("--github", action="store_true")
+
     args = parser.parse_args(argv)
+    if args.command == "accept":
+        return _accept(args)
     try:
         outcome = generate(
             args.answers,
@@ -54,6 +61,20 @@ def main(argv: list[str] | None = None) -> int:
         print(line)
     for location, message in outcome.warnings:
         print(f"warning: {location}: {message}", file=sys.stderr)
+    for location, message in outcome.errors:
+        print(f"error: {location}: {message}", file=sys.stderr)
+    return outcome.code
+
+
+def _accept(args: argparse.Namespace) -> int:
+    try:
+        outcome = accept(args.target.resolve(), github=args.github, template_root=ROOT)
+    except Exception as exc:  # noqa: BLE001 - report any defect with the documented exit code
+        print(f"error: -: internal error: {exc!r}", file=sys.stderr)
+        return 1
+    for result in outcome.results:
+        suffix = f" ({result.reason})" if result.reason else ""
+        print(f"{result.status} {result.check}{suffix}")
     for location, message in outcome.errors:
         print(f"error: {location}: {message}", file=sys.stderr)
     return outcome.code

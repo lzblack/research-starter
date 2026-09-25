@@ -11,10 +11,7 @@ ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = sorted((ROOT / "tests" / "fixtures" / "answers").glob("*.yml"))
 DATE = "2026-01-15"
 
-pytestmark = [
-    pytest.mark.fixtures,
-    pytest.mark.xfail(strict=True, reason="setup script not implemented yet (M1 step 5)"),
-]
+pytestmark = pytest.mark.fixtures
 
 
 def run(*args: str | Path) -> subprocess.CompletedProcess[str]:
@@ -68,4 +65,7 @@ def test_fixture(answers: Path, tmp_path: Path) -> None:
     # Local acceptance checks (A7.3): nothing fails.
     accept = run("accept", "--target", tmp_path / "a")
     assert accept.returncode == 0, accept.stdout + accept.stderr
-    assert not [line for line in accept.stdout.splitlines() if line.startswith("fail ")]
+    statuses = {line.split(" ")[1]: line.split(" ")[0] for line in accept.stdout.splitlines()}
+    for check in ["env-sync", "render-content", "template-provenance"]:
+        assert statuses[check] == "pass", accept.stdout
+    assert "fail" not in statuses.values(), accept.stdout

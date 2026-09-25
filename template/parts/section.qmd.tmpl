@@ -1,0 +1,16 @@
+@@if section.human_drafted@@
+<!-- Human-drafted section: agents may critique it but must not edit it (see AGENTS.md). -->
+
+@@end@@
+# @@section.title@@ {#sec-@@section.id@@}
+
+@@if section.first@@
+This synthetic example reports {{< var example_n_obs >}} observations (@tbl-example_table and
+@fig-example_figure), following @example2020.
+
+{{< include outputs/tables/example_table.md >}}
+
+![A synthetic example figure.](outputs/figures/example_figure.png){#fig-example_figure}
+
+@@end@@
+Write this section here.

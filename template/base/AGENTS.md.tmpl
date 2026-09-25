@@ -1,0 +1,35 @@
+# AGENTS.md
+
+Instructions for AI agents working on @@name@@.
+
+## Language
+
+Write everything in this repository (code comments, docs, journal, decisions, commit messages,
+issues) in the language with tag `@@language@@`, whatever language the conversation uses.
+
+## Checks
+
+- Enable the pre-commit hook once per clone: `git config core.hooksPath .githooks`.
+@@if open@@
+- This repository is public. Never bypass the pre-commit hook (`--no-verify`).
+@@end@@
+@@if human_drafted@@
+
+## Human-drafted sections
+
+Agents may write critique-only reports on these sections and must not edit them:
+
+@@list:human-drafted@@
+@@end@@
+@@if collaboration@@
+
+## Discussion
+
+Discuss project work in GitHub issues, so decisions stay in the shared record.
+@@end@@
+
+## Project rules
+
+<!-- project-rules:begin -->
+@@project_rules@@
+<!-- project-rules:end -->

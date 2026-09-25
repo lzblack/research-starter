@@ -26,7 +26,7 @@ class Outcome:
     warnings: list[tuple[str, str]] = field(default_factory=list)
 
 
-class _Refused(Exception):
+class Refused(Exception):
     def __init__(self, code: int, errors: list[tuple[str, str]]) -> None:
         super().__init__(errors)
         self.code = code
@@ -40,10 +40,10 @@ def _git(cwd: Path, *args: str, check: bool = True) -> subprocess.CompletedProce
 def template_commit(root: Path, allow_dirty: bool) -> str:
     head = _git(root, "rev-parse", "HEAD", check=False)
     if head.returncode != 0:
-        raise _Refused(5, [("-", f"the template directory is not a git checkout: {root}")])
+        raise Refused(5, [("-", f"the template directory is not a git checkout: {root}")])
     dirty = _git(root, "status", "--porcelain", "--", *TEMPLATE_PATHS).stdout.strip()
     if dirty and not allow_dirty:
-        raise _Refused(
+        raise Refused(
             5, [("-", "the template checkout has uncommitted changes; commit them or pass --allow-dirty")]
         )
     return head.stdout.strip() + ("-dirty" if dirty else "")
@@ -59,20 +59,20 @@ def _recorded(target: Path, normalized: dict[str, Any]) -> dict[str, str] | None
     if not os.path.lexists(path):
         return None
     if path.is_symlink() or not path.is_file():
-        raise _Refused(5, [("project.yml", "exists but is not a regular file")])
+        raise Refused(5, [("project.yml", "exists but is not a regular file")])
     try:
         data = load_yaml_strict(path.read_text(encoding="utf-8"), "project.yml")
     except (AnswersError, UnicodeDecodeError, OSError) as exc:
-        raise _Refused(5, [("project.yml", f"exists but cannot be read: {exc}")]) from exc
+        raise Refused(5, [("project.yml", f"exists but cannot be read: {exc}")]) from exc
     generated = data.pop("generated", None) if isinstance(data, dict) else None
     if not (
         isinstance(generated, dict)
         and set(generated) == {"date", "template_commit"}
         and all(isinstance(v, str) for v in generated.values())
     ):
-        raise _Refused(5, [("project.yml", "has no valid 'generated' block")])
+        raise Refused(5, [("project.yml", "has no valid 'generated' block")])
     if data != normalized:
-        raise _Refused(
+        raise Refused(
             5,
             [("project.yml", "the answers differ from the recorded ones; change configuration by hand")],
         )
@@ -86,13 +86,13 @@ def _check_first_run(target: Path) -> None:
         if entry.name not in TOLERATED and not entry.name.startswith(TEMP_PREFIX)
     )
     if extra:
-        raise _Refused(
+        raise Refused(
             5,
             [("-", f"the target is not empty ({', '.join(extra[:5])}); adoption of an existing "
                    "project is not supported")],
         )  # fmt: skip
     if (target / ".git").exists() and _git(target, "rev-parse", "--verify", "-q", "HEAD", check=False).returncode == 0:
-        raise _Refused(5, [("-", "the target's git repository already has commits")])
+        raise Refused(5, [("-", "the target's git repository already has commits")])
 
 
 def _classify(target: Path, path: str, spec: FileSpec) -> str:
@@ -158,7 +158,7 @@ def generate(
 ) -> Outcome:
     try:
         return _generate(answers_path, target, date, dry_run, allow_dirty, template_root)
-    except _Refused as refused:
+    except Refused as refused:
         return Outcome(code=refused.code, errors=refused.errors)
 
 
@@ -167,22 +167,22 @@ def _generate(
 ) -> Outcome:
     for tool in ["git", "uv"]:
         if shutil.which(tool) is None:
-            raise _Refused(5, [("-", f"{tool} is not installed or not on PATH")])
+            raise Refused(5, [("-", f"{tool} is not installed or not on PATH")])
     commit = template_commit(root, allow_dirty)
 
     try:
         answers = load_answers(answers_path)
     except AnswersError as exc:
-        raise _Refused(3, [(i.location, i.message) for i in exc.issues]) from exc
+        raise Refused(3, [(i.location, i.message) for i in exc.issues]) from exc
 
     if not target.is_dir():
-        raise _Refused(5, [("-", f"the target directory does not exist: {target}")])
+        raise Refused(5, [("-", f"the target directory does not exist: {target}")])
     target = target.resolve()
     if _is_inside(target, root.resolve()):
-        raise _Refused(5, [("-", "the target must not be inside the template checkout")])
+        raise Refused(5, [("-", "the target must not be inside the template checkout")])
     store = answers.normalized["data"]["large_store"]
     if store.startswith("~/") and _is_inside(Path(store).expanduser().resolve(), target):
-        raise _Refused(3, [("data.large_store", "must not be inside the project directory")])
+        raise Refused(3, [("data.large_store", "must not be inside the project directory")])
 
     recorded = _recorded(target, answers.normalized)
     if recorded is None:
@@ -190,20 +190,20 @@ def _generate(
         generated = {"date": date or datetime.date.today().isoformat(), "template_commit": commit}
     else:
         if recorded["template_commit"] != commit:
-            raise _Refused(
+            raise Refused(
                 5,
                 [("project.yml", f"was generated from template commit {recorded['template_commit']}, "
                                  f"but this checkout is at {commit}; template updates follow the "
                                  "manual migration notes")],
             )  # fmt: skip
         if date is not None and date != recorded["date"]:
-            raise _Refused(5, [("-", f"--date differs from the recorded date {recorded['date']}")])
+            raise Refused(5, [("-", f"--date differs from the recorded date {recorded['date']}")])
         generated = recorded
 
     try:
         plan: Plan = build_plan(answers, generated, root / "template")
     except TemplateError as exc:
-        raise _Refused(1, [("template", str(exc))]) from exc
+        raise Refused(1, [("template", str(exc))]) from exc
 
     status = {path: _classify(target, path, spec) for path, spec in plan.files.items()}
     outcome = Outcome(
