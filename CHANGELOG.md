@@ -1,7 +1,13 @@
 # Changelog
 
-All notable changes to this template are listed here. Versions are git tags. Each release that
-changes template files includes migration notes that a project owner follows by hand.
+All notable changes to this template are listed here. Versions are git tags (`v0.x.y` until the
+pilots finish).
+
+Each release that changes template files has a "Migration" subsection. A project owner, or their
+agent, applies it by hand:
+1. Find the project's template commit in its template provenance record.
+2. Follow the migration notes of every later release in order.
+3. Record the new template version as a decision.
 
 ## Unreleased
 
@@ -19,5 +25,7 @@ Pre-release development. Nothing here is a stable interface yet.
 - Agent skills: handoff, consolidate, reviewer, add-paper, and meeting-notes, tested with
   Claude Code and Codex.
 - GitHub provisioning, the generated project's CI, and preview artifacts.
-- CI for this repository on Linux (x86_64, aarch64) and macOS (arm64, x86_64), plus a
-  public-content scan.
+- CI for this repository on Linux (x86_64, aarch64) and macOS (arm64, x86_64), a
+  public-content scan, and weekly compatibility checks for the external tools.
+- Guidance in generated projects: the working routine, writing syntax, data governance, review
+  gates, milestone releases, claim audits, retro entries, template updates, and closure.
