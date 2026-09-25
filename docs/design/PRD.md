@@ -133,7 +133,7 @@ Copier or a similar templating tool is out of scope for v0 (section 19a).
 | people | name, GitHub handle (optional), role, `owns` paths, `reviews` paths | first person is the lead; role `reader` for collaborators without GitHub |
 | mode | solo, team | team enables the collaboration module |
 | visibility | open, closed | see section 12; open requires every member's consent |
-| modules | see section 9 | each on/off |
+| modules | see section 9 | v0 has no independently switchable modules; collaboration follows mode (appendix A2.1) |
 | writing.formats | non-empty subset of docx, pdf (Typst) | default: docx and pdf |
 | writing.csl | any CSL style | |
 | writing.sections | ordered list | one file per section |
@@ -152,7 +152,7 @@ AGENTS.md            the only agent instruction file (no CLAUDE.md)
 README.md            human onboarding and template mechanics
 build.py             single entry point for regenerating results and the paper (section 14a)
 pyproject.toml, uv.lock
-docs/                brief, status, decisions/ (one file each), ai-use, workflow-retro, closure
+docs/                brief, status, decisions/ and retro/ (one file each), ai-use, closure
 journal/             append-only session notes, one file per session
 logs/                run logs written by scripts; not committed by default
 data/                small derived data; README with sources, tiers, licenses
@@ -479,7 +479,8 @@ GitHub integration checks (require an authenticated remote):
 - Versions are git tags with a CHANGELOG entry. v0 promises documented manual migration: each
   release that changes template files includes migration notes that a project owner (or their
   agent) follows by hand. Automated updates are deferred (section 19a).
-- Feedback arrives through each project's `docs/workflow-retro.md`.
+- Feedback arrives through each project's workflow retro entries in `docs/retro/`, one file per
+  entry.
 
 ## 17a. Open-source hygiene for this repository
 
