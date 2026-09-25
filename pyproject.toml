@@ -19,6 +19,7 @@ required-version = ">=0.12.18"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 markers = [
     "fixtures: end-to-end runs over the fixture answer files (slow; first run downloads Quarto)",
 ]
