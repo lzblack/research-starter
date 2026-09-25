@@ -11,7 +11,13 @@ agent, applies it by hand:
 
 ## Unreleased
 
-Pre-release development. Nothing here is a stable interface yet.
+## 0.1.0 (2026-09-25)
+
+The first release, for the pilots. Interfaces may still change before 1.0.
+
+### Migration
+
+None: this is the first release.
 
 ### Added
 

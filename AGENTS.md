@@ -76,7 +76,8 @@ This repository follows the same conventions it provides to users.
   filename format is defined in the PRD's normative appendix. `journal/` is gitignored and stays
   local: this repository is public, and session notes are personal working records.
 - Decisions: one file per decision in `docs/decisions/` (`YYYY-MM-DD-slug.md`: decision, reason,
-  alternatives, decided by). Record only decisions that change scope, licensing, architecture or
+  alternatives, decided by). This repository keeps this simpler format rather than the appendix
+  A6.3 format that generated projects use (see `docs/decisions/2026-09-25-decision-format.md`). Record only decisions that change scope, licensing, architecture or
   interfaces, data handling, or this repository's rules; explain smaller changes in commit messages.
   Decision files state reasons suitable for a public record; other considerations go in the
   journal. Supersede with a new file; never edit old ones.
