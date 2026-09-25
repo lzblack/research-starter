@@ -429,7 +429,7 @@ def quote(value: str) -> str:
     for ch in value:
         if ch in _ESCAPES:
             out.append(_ESCAPES[ch])
-        elif unicodedata.category(ch) in {"Cc", "Zl", "Zp"} or ch == "﻿":
+        elif unicodedata.category(ch) in {"Cc", "Zl", "Zp"} or ch == "\ufeff":
             out.append(f"\\u{ord(ch):04x}")
         else:
             out.append(ch)
@@ -445,7 +445,7 @@ def _literal_ok(value: str) -> bool:
     if any(line and not line.strip() for line in lines):
         return False
     first = next(line for line in lines if line)
-    return not first.startswith(" ") and "﻿" not in value
+    return not first.startswith(" ") and "\ufeff" not in value
 
 
 def _scalar_lines(value: Any, indent: int) -> tuple[str, list[str]]:

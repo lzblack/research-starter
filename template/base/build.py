@@ -19,6 +19,7 @@ import shutil
 import subprocess
 import sys
 import tomllib
+import unicodedata
 from pathlib import Path
 from typing import Any
 
@@ -48,12 +49,13 @@ def sha256(path: Path) -> str:
 
 
 def quote(value: str) -> str:
+    """A double-quoted YAML string; control and line-separator characters are escaped."""
     escapes = {"\\": "\\\\", '"': '\\"', "\n": "\\n", "\t": "\\t", "\r": "\\r"}
     out = []
     for ch in value:
         if ch in escapes:
             out.append(escapes[ch])
-        elif ord(ch) < 0x20 or ord(ch) == 0x7F or ch in "  ﻿":
+        elif unicodedata.category(ch) in {"Cc", "Cs", "Zl", "Zp"} or ch == "\ufeff":
             out.append(f"\\u{ord(ch):04x}")
         else:
             out.append(ch)
@@ -286,7 +288,10 @@ def stage_analyze(root: Path, config: dict[str, Any]) -> None:
                 owner[rel] = pid
         before = after
 
-    manifest, merged = build_manifest(root, staging, owner, producers)
+    try:
+        manifest, merged = build_manifest(root, staging, owner, producers)
+    except (UnicodeError, ValueError) as exc:
+        raise StageError(FAIL, f"an output file could not be read: {exc}") from exc
     promote = fresh_dir(root / ".build" / "promote")
     for rel in owner:
         if not rel.startswith("inputs/"):
@@ -328,7 +333,7 @@ def expected_outputs(root: Path) -> list[str]:
         if key not in FORMAT_EXTENSIONS:
             raise StageError(FAIL, f"paper/_quarto.yml: format {key!r} is not supported (docx, typst)")
         extension = FORMAT_EXTENSIONS[key]
-        name = (options or {}).get("output-file") or f"paper.{extension}"
+        name = (options.get("output-file") if isinstance(options, dict) else None) or f"paper.{extension}"
         names.append(name if name.endswith(f".{extension}") else f"{name}.{extension}")
     return names
 

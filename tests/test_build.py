@@ -259,3 +259,28 @@ def test_manifest_check_failures(project: Path, tamper) -> None:
     tamper(project)
     assert build.check_manifest(project)
     assert main(project, "check") == 1
+
+
+# --- Review fixes --------------------------------------------------------------------------------
+
+
+def test_non_bmp_and_control_characters_in_variables(project: Path) -> None:
+    write_step(project, "a", 'o = Outputs("a")\no.variable("beta", "\\U0001d6fd = 0.50")\no.variable("c1", "x\\x85y")\n')
+    assert main(project, "analyze") == 0
+    loaded = build.load_yaml((project / "paper" / "_variables.yml").read_text(encoding="utf-8"), "v")
+    assert loaded == {"beta": "\U0001d6fd = 0.50", "c1": "x\x85y"}
+    assert build.check_manifest(project) == []
+
+
+def test_undecodable_variables_file_is_a_stage_failure(project: Path, capsys) -> None:
+    write_step(project, "a", 'import os, pathlib\nd = pathlib.Path(os.environ["BUILD_OUTPUT_DIR"]) / "variables"\n'
+               'd.mkdir(parents=True)\n(d / "a.yml").write_bytes(b"x: \\"\\xff\\xfe\\"\\n")\n')  # fmt: skip
+    assert main(project, "analyze") == 1
+    assert "stage analyze: fail" in capsys.readouterr().out
+
+
+def test_quarto_format_given_as_string(project: Path, tmp_path: Path, monkeypatch) -> None:
+    paper_project(project)
+    (project / "paper" / "_quarto.yml").write_text("format:\n  docx: default\n")
+    monkeypatch.setattr(build, "find_quarto", lambda: fake_quarto(tmp_path, ["paper.docx"]))
+    assert main(project, "paper") == 0

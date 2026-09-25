@@ -16,6 +16,7 @@ session the outputs go to .build/scratch/outputs/, and the committed paper input
 import json
 import os
 import re
+import unicodedata
 from pathlib import Path
 from typing import Any
 
@@ -29,7 +30,17 @@ def _output_root() -> Path:
 
 
 def _quote(value: str) -> str:
-    return json.dumps(value)
+    """A double-quoted YAML string; control and line-separator characters are escaped."""
+    escapes = {"\\": "\\\\", '"': '\\"', "\n": "\\n", "\t": "\\t", "\r": "\\r"}
+    out = []
+    for ch in value:
+        if ch in escapes:
+            out.append(escapes[ch])
+        elif unicodedata.category(ch) in {"Cc", "Cs", "Zl", "Zp"} or ch == "\ufeff":
+            out.append(f"\\u{ord(ch):04x}")
+        else:
+            out.append(ch)
+    return '"' + "".join(out) + '"'
 
 
 def _cell(value: Any) -> str:
