@@ -45,3 +45,23 @@ def test_not_a_project(tmp_path: Path) -> None:
 def test_unreadable_project_yml(tmp_path: Path) -> None:
     (tmp_path / "project.yml").write_text("schema: 1\n")
     assert accept(tmp_path, github=False, template_root=tmp_path).code == 5
+
+
+def test_copy_uses_the_index_not_the_working_tree(tmp_path: Path) -> None:
+    import subprocess
+
+    from starter.accept import _copy_tracked
+
+    source = tmp_path / "source"
+    source.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=source, check=True)
+    (source / "kept.txt").write_text("staged\n")
+    (source / "deleted.txt").write_text("gone\n")
+    subprocess.run(["git", "add", "-A"], cwd=source, check=True)
+    (source / "kept.txt").write_text("edited but not staged\n")
+    (source / "deleted.txt").unlink()
+    copy = tmp_path / "copy"
+    copy.mkdir()
+    _copy_tracked(source, copy)
+    assert (copy / "kept.txt").read_text() == "staged\n"
+    assert (copy / "deleted.txt").read_text() == "gone\n"

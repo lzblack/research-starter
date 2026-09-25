@@ -49,6 +49,12 @@ def template_commit(root: Path, allow_dirty: bool) -> str:
     return head.stdout.strip() + ("-dirty" if dirty else "")
 
 
+def template_files(root: Path) -> set[str]:
+    """Template files git would track: committed or untracked, never ignored (A1.5, A3.1)."""
+    listed = _git(root, "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", "template").stdout
+    return {path for path in listed.split("\0") if path}
+
+
 def _is_inside(path: Path, parent: Path) -> bool:
     return path == parent or parent in path.parents
 
@@ -156,7 +162,8 @@ def _setup_git(target: Path, paths: list[str]) -> None:
     if current != ".githooks":
         _git(target, "config", "core.hooksPath", ".githooks")
     if paths:
-        _git(target, "add", "--", *paths)
+        # A user's global excludes (for example `.claude/`) must not drop generated files.
+        _git(target, "-c", "core.excludesFile=/dev/null", "add", "--", *paths)
 
 
 def generate(
@@ -213,7 +220,7 @@ def _generate(
         generated = recorded
 
     try:
-        plan: Plan = build_plan(answers, generated, root / "template")
+        plan: Plan = build_plan(answers, generated, root / "template", include=template_files(root))
     except TemplateError as exc:
         raise Refused(1, [("template", str(exc))]) from exc
 

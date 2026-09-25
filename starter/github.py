@@ -73,6 +73,9 @@ def provision(
     if _git(target, "rev-parse", "--verify", "-q", "HEAD").returncode != 0:
         report.step("fail", "confirm", "the project has no commit; make the initial commit first")
         return report
+    if _git(target, "status", "--porcelain", "--untracked-files=no").stdout.strip():
+        report.step("fail", "confirm", "commit or discard the local changes first")
+        return report
     if not accept_local(target):
         report.step("fail", "confirm", "the local acceptance checks do not pass")
         return report
@@ -110,7 +113,8 @@ def provision(
         report.step("fail", "issues", listed.stderr.strip())
         return report
     bodies = [item.get("body", "") for item in json.loads(listed.stdout or "[]")]
-    wanted = [("setup", SETUP_TITLE, SETUP_BODY)] + [(issue_key(t), t, "") for t in first_tasks]
+    tasks = list(dict.fromkeys(first_tasks))
+    wanted = [("setup", SETUP_TITLE, SETUP_BODY)] + [(issue_key(t), t, "") for t in tasks]
     for key, title, body in wanted:
         marker = MARKER.format(key=key)
         if any(marker in existing for existing in bodies):
@@ -120,6 +124,7 @@ def provision(
         if created.returncode != 0:
             report.step("fail", f"issue {key}", created.stderr.strip())
             return report
+        bodies.append(f"{body}\n{marker}\n")
         report.step("done", f"issue {key}", title)
 
     if github_checks is not None:

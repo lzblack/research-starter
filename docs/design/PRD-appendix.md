@@ -156,6 +156,8 @@ Template tree:
   ending in `.symlink` holds a relative target inside the project; setup creates a symbolic link
   to it without the suffix. Every other file is copied byte for byte with its executable bit.
   Symbolic links in the template tree itself are template errors.
+- Only template files that git would track are used: committed files, and untracked files that no
+  ignore rule matches. Ignored files in the checkout (for example a local `.env`) are never copied.
 
 Template files use three constructs, applied in this order:
 
