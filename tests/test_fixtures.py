@@ -66,6 +66,20 @@ def test_fixture(answers: Path, tmp_path: Path) -> None:
     accept = run("accept", "--target", tmp_path / "a")
     assert accept.returncode == 0, accept.stdout + accept.stderr
     statuses = {line.split(" ")[1]: line.split(" ")[0] for line in accept.stdout.splitlines()}
-    for check in ["env-sync", "render-content", "template-provenance"]:
+    for check in ["env-sync", "example-build", "render-content", "project-checks", "template-provenance"]:
         assert statuses[check] == "pass", accept.stdout
     assert "fail" not in statuses.values(), accept.stdout
+
+    # Full synthetic build (A7.4) in the generated project itself.
+    env = {k: v for k, v in os.environ.items() if k != "VIRTUAL_ENV"}
+    full = subprocess.run(
+        ["uv", "run", "--locked", "build.py", "all"],
+        cwd=tmp_path / "a",
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert full.returncode == 0, full.stdout + full.stderr
+    for stage in ["prepare", "analyze", "paper", "check"]:
+        assert f"stage {stage}: pass" in full.stdout

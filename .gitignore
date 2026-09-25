@@ -225,3 +225,4 @@ journal/
 
 # Template content is tracked in full; the patterns above apply to this repository's own files.
 !/template/**
+/template/**/__pycache__/
