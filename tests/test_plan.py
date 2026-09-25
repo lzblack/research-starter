@@ -8,34 +8,10 @@ import pytest
 from starter.answers import validate
 from starter.plan import build_plan
 from starter.render import TemplateError
+from tests.conftest import write
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 GENERATED = {"date": "2026-01-15", "template_commit": "abc123"}
-
-
-def write(path: Path, text: str | bytes, executable: bool = False) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if isinstance(text, bytes):
-        path.write_bytes(text)
-    else:
-        path.write_text(text)
-    if executable:
-        path.chmod(0o755)
-
-
-@pytest.fixture
-def tree(tmp_path: Path) -> Path:
-    t = tmp_path / "template"
-    write(t / "base" / "README.md.tmpl", "# @@name@@\n@@if not open@@\nprivate\n@@end@@\n")
-    write(t / "base" / "static.txt.tmpl", "unchanged @@slug@@\n")
-    write(t / "base" / "image.png", b"\x89PNG\r\n\x1a\n@@name@@")
-    write(t / "base" / "hook", "#!/bin/sh\n", executable=True)
-    write(t / "if-collaboration" / ".github" / "CODEOWNERS.tmpl", "@@list:codeowners@@\n/docs/status.md @@@lead.github@@\n")
-    write(t / "if-open" / "OPEN.md", "open\n")
-    write(t / "if-not-open" / "CLOSED.md", "closed\n")
-    write(t / "parts" / "section.qmd.tmpl", "# @@section.title@@\n@@if section.first@@\nfirst\n@@end@@\n@@if section.human_drafted@@\nhuman\n@@end@@\n")
-    write(t / "parts" / "template-provenance.md.tmpl", "commit @@generated.template_commit@@\n")
-    return t
 
 
 def answers(**changes: object) -> dict:
