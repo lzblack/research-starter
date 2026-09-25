@@ -2,9 +2,11 @@
 
 Template tree (appendix A1.4): `base/` is always copied; `if-<flag>/` and `if-not-<flag>/` are
 copied according to a derived flag (A2.1); `parts/` holds per-item templates. Files ending in
-`.tmpl` are rendered and written without the suffix; other files are copied byte for byte.
+`.tmpl` are rendered and written without the suffix; a file ending in `.symlink` holds the
+relative target of a symbolic link created without the suffix; other files are copied byte for byte.
 """
 
+import posixpath
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -23,6 +25,7 @@ SKIP_NAMES = {".DS_Store", "__pycache__"}
 class FileSpec:
     content: bytes
     executable: bool = False
+    link: str | None = None  # a symbolic link to this relative target, instead of a file
 
 
 @dataclass
@@ -130,6 +133,14 @@ def _render_file(source: Path, ctx: Context, label: str) -> bytes:
     return render(text, ctx, label).encode()
 
 
+def _link_target(source: Path, path: str, label: str) -> str:
+    target = source.read_text(encoding="utf-8").strip()
+    resolved = posixpath.normpath(posixpath.join(posixpath.dirname(path), target)) if target else ""
+    if not target or target.startswith("/") or resolved.startswith("..") or resolved in {"", "."}:
+        raise TemplateError(f"{label}: a link target must be a relative path inside the project")
+    return target
+
+
 def build_plan(answers: Answers, generated: dict[str, str], template_dir: Path) -> Plan:
     n = answers.normalized
     ctx = build_context(n, generated)
@@ -145,7 +156,10 @@ def build_plan(answers: Answers, generated: dict[str, str], template_dir: Path) 
             rel = source.relative_to(root).as_posix()
             label = f"{root.name}/{rel}"
             executable = bool(source.stat().st_mode & 0o111)
-            if rel.endswith(".tmpl"):
+            if rel.endswith(".symlink"):
+                path = rel.removesuffix(".symlink")
+                _add(plan, path, FileSpec(b"", link=_link_target(source, path, label)), label)
+            elif rel.endswith(".tmpl"):
                 spec = FileSpec(_render_file(source, ctx, label), executable)
                 _add(plan, rel.removesuffix(".tmpl"), spec, label)
             else:

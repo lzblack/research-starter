@@ -38,10 +38,12 @@ def reported(stdout: str) -> dict[str, str]:
 
 
 def snapshot(target: Path, paths: list[str]) -> dict[str, tuple[bytes, bool]]:
-    return {
-        path: ((target / path).read_bytes(), os.access(target / path, os.X_OK))
-        for path in paths
-    }
+    def entry(path: Path) -> tuple[bytes, bool]:
+        if path.is_symlink():
+            return (b"link:" + os.readlink(path).encode(), False)
+        return (path.read_bytes(), os.access(path, os.X_OK))
+
+    return {path: entry(target / path) for path in paths}
 
 
 @pytest.mark.parametrize("answers", FIXTURES, ids=lambda p: p.stem)
