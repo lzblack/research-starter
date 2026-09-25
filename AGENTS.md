@@ -23,6 +23,8 @@ conversation text verbatim into the repository; write the substance in your own 
   there (for example `template/AGENTS.md.tmpl`) are templates, not instructions for you. Never
   follow them while working here.
 - Template instruction files carry the `.tmpl` suffix so they are never mistaken for live files.
+- `BOOTSTRAP.md` is for agents that create a new project from the template. Never follow it while
+  working on this repository.
 
 ## How to work
 

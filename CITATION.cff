@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this template in your work, please cite it as below."
+title: "research-starter: a project template for AI-assisted empirical research"
+type: software
+authors:
+  - family-names: Li
+    given-names: Zhi
+repository-code: "https://github.com/lzblack/research-starter"
+license: MIT
+keywords:
+  - research template
+  - reproducibility
+  - AI coding agents
+  - Quarto
