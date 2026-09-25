@@ -43,7 +43,11 @@ def compile_pattern(pattern: str) -> re.Pattern[str]:
         else:
             out.append(re.escape(body[i]))
             i += 1
-    return re.compile("^" + "".join(out) + "(?:/.*)?$")
+    # A pattern also covers everything below a directory it names, except when its last segment
+    # has a single-segment wildcard: CODEOWNERS `docs/*` does not match nested files.
+    last = body.rsplit("/", 1)[-1]
+    below = "" if "*" in last and last != "**" else "(?:/.*)?"
+    return re.compile("^" + "".join(out) + below + "$")
 
 
 def matches(pattern: str, path: str) -> bool:

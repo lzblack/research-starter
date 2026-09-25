@@ -248,3 +248,42 @@ def test_crosswalk_rows(project: Path) -> None:
     assert ("{{< var n_obs >}}", "n_obs", "variable") in refs
     assert ("@tbl-main", "main", "") in refs
     assert all(r["location"].startswith("paper/sections/introduction.qmd:") for r in rows)
+
+
+# --- Review fixes --------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "declaration",
+    [
+        "  - id: raw_survey\n    tier: confidential\n    license: x\n    raw: true\n    paths:\n      - /data/raw/**\n",
+        "  - id: raw_survey\n    tier: confidential\n    license: x\n    raw: true\n    paths: data/raw/\n",
+        "  - id: raw_survey\n    tier: public\n    license: x\n    raw: 'true'\n    paths:\n      - data/raw/\n",
+    ],
+    ids=["leading-slash", "paths-string", "raw-string"],
+)
+def test_declared_paths_fails_closed_on_malformed_declarations(project: Path, declaration: str) -> None:
+    write(project, "data/README.md", "---\ndatasets:\n" + declaration + "---\n")
+    write(project, "data/raw/responses.csv", "id\n1\n")
+    git(project, "add", "-A")
+    assert status(project, "declared-paths", staged=True) == "fail"
+    assert status(project, "declared-paths") == "fail"
+    assert status(project, "datasets") == "fail"
+
+
+def test_email_exemption_matches_whole_domain(project: Path) -> None:
+    write(project, "notes.md", "a@notexample.com b@sub.example.org\n")
+    git(project, "add", "notes.md")
+    problems = results(project)["pii-scan"].problems
+    assert len(problems) == 1 and "possible email address" in problems[0]
+
+
+def test_malformed_project_yml_is_a_failure_not_a_crash(project: Path) -> None:
+    write(project, "project.yml", "- just\n- a list\n")
+    assert status(project, "owners") == "fail"
+
+
+def test_single_star_does_not_match_nested(project: Path) -> None:
+    assert not checks.pattern_matches("paper/*", "paper/sections/intro.qmd")
+    assert checks.pattern_matches("paper/*", "paper/paper.qmd")
+    assert checks.pattern_matches("paper/**", "paper/sections/intro.qmd")
