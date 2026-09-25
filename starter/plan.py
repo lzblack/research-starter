@@ -16,7 +16,7 @@ from starter.render import Context, TemplateError, render
 TEMPLATE_URL = "https://github.com/lzblack/research-starter"
 FLAGS = ["collaboration", "open", "docx", "pdf", "csl", "human_drafted", "review_gates", "large_store"]
 PARTS = {"section": "section.qmd.tmpl", "provenance": "template-provenance.md.tmpl"}
-SKIP_NAMES = {".DS_Store"}
+SKIP_NAMES = {".DS_Store", "__pycache__"}
 
 
 @dataclass(frozen=True)
@@ -138,7 +138,7 @@ def build_plan(answers: Answers, generated: dict[str, str], template_dir: Path) 
 
     for root in _tree_roots(template_dir, ctx.flags):
         for source in sorted(p for p in root.rglob("*") if p.is_file() or p.is_symlink()):
-            if source.name in SKIP_NAMES:
+            if SKIP_NAMES & set(source.relative_to(root).parts):
                 continue
             if source.is_symlink():
                 raise TemplateError(f"template files must not be symbolic links: {source}")

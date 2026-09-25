@@ -100,3 +100,10 @@ def test_symlink_in_template_rejected(tree: Path) -> None:
 
 def test_same_inputs_same_plan(tree: Path) -> None:
     assert plan_for(tree).files == plan_for(tree).files
+
+
+def test_caches_are_skipped(tree: Path) -> None:
+    write(tree / "base" / "__pycache__" / "x.cpython-314.pyc", b"\0")
+    write(tree / "base" / "sub" / ".DS_Store", b"\0")
+    files = plan_for(tree).files
+    assert not [name for name in files if "__pycache__" in name or ".DS_Store" in name]

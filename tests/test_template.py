@@ -12,6 +12,7 @@ from starter.plan import build_plan
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = sorted((ROOT / "tests" / "fixtures" / "answers").glob("*.yml"))
 GENERATED = {"date": "2026-01-15", "template_commit": "0" * 40}
+BINARY = (".png", ".parquet")
 HOSTILE = 'Name "quoted" \\ back @@slug@@ é'
 
 
@@ -30,7 +31,7 @@ def test_structured_files_parse(path: Path, hostile: bool) -> None:
     plan = plans(path, hostile)
     yaml = YAML(typ="safe", pure=True)
     for name, spec in plan.files.items():
-        text = spec.content.decode() if not name.endswith(".png") else ""
+        text = "" if name.endswith(BINARY) else spec.content.decode()
         if name.endswith((".yml", ".yaml")):
             yaml.load(text)
         elif name.endswith(".toml") or name == "uv.lock":
@@ -44,7 +45,7 @@ def test_structured_files_parse(path: Path, hostile: bool) -> None:
 @pytest.mark.parametrize("path", FIXTURES, ids=lambda p: p.stem)
 def test_no_placeholder_left(path: Path) -> None:
     for name, spec in plans(path, hostile=False).files.items():
-        if not name.endswith(".png"):
+        if not name.endswith(BINARY):
             assert b"@@" not in spec.content, name
 
 

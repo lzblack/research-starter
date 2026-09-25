@@ -4,6 +4,7 @@ Local checks run in a temporary git repository holding a copy of the target's tr
 the target is never changed. Checks whose prerequisites are missing report `not-tested`.
 """
 
+import json
 import os
 import re
 import shutil
@@ -86,11 +87,31 @@ def render_problems(text: str, *, value: str, first_title: str, english: bool) -
     return problems
 
 
+def _example_build(copy: Path, project: dict[str, Any]) -> Result:
+    check = "example-build"
+    for stage in ["analyze", "paper"]:
+        result = _run(["uv", "run", "--locked", "build.py", stage], copy)
+        if result.returncode != 0:
+            return Result(check, "fail", f"build.py {stage} failed: {_last_line(result)}")
+    manifest = json.loads((copy / "paper" / "outputs" / "manifest.json").read_text(encoding="utf-8"))
+    kinds = {artifact["kind"] for artifact in manifest["artifacts"]}
+    lacking = sorted({"variable", "table", "figure"} - kinds)
+    if lacking:
+        return Result(check, "fail", f"analyze produced no {', '.join(lacking)}")
+    absent = [
+        name for name in _rendered(project) if not (copy / "paper" / "_output" / name).is_file()
+    ]
+    if absent:
+        return Result(check, "fail", f"paper did not produce {', '.join(absent)}")
+    return Result(check, "pass")
+
+
+def _rendered(project: dict[str, Any]) -> list[str]:
+    return [f"{project['slug']}.{EXTENSIONS[fmt]}" for fmt in project["writing"]["formats"]]
+
+
 def _render_content(copy: Path, project: dict[str, Any]) -> Result:
     check = "render-content"
-    render = _run(["uv", "run", "--locked", "quarto", "render"], copy / "paper")
-    if render.returncode != 0:
-        return Result(check, "fail", f"quarto render failed: {_last_line(render)}")
     variables = load_yaml_strict((copy / "paper" / "_variables.yml").read_text(), "_variables.yml")
     if not isinstance(variables, dict) or EXAMPLE_VARIABLE not in variables:
         return Result(check, "fail", f"paper/_variables.yml has no {EXAMPLE_VARIABLE}")
@@ -98,17 +119,22 @@ def _render_content(copy: Path, project: dict[str, Any]) -> Result:
     first = section_title(project["writing"]["sections"][0])
     english = project["language"].split("-")[0] == "en"
     problems = []
-    for fmt in project["writing"]["formats"]:
-        path = copy / "paper" / "_output" / f"{project['slug']}.{EXTENSIONS[fmt]}"
-        if not path.is_file():
-            problems.append(f"{path.name} not produced")
-            continue
-        problems += [f"{path.name}: {p}" for p in render_problems(
+    for name in _rendered(project):
+        path = copy / "paper" / "_output" / name
+        problems += [f"{name}: {p}" for p in render_problems(
             extract_text(path), value=value, first_title=first, english=english
         )]  # fmt: skip
     if problems:
         return Result(check, "fail", "; ".join(problems))
     return Result(check, "pass")
+
+
+def _project_checks(copy: Path) -> Result:
+    result = _run(["uv", "run", "--locked", "build.py", "check"], copy)
+    if result.returncode != 0:
+        failed = [line for line in result.stdout.splitlines() if line.startswith("fail ")]
+        return Result("project-checks", "fail", "; ".join(failed) or _last_line(result))
+    return Result("project-checks", "pass")
 
 
 def _provenance(target: Path, generated: dict[str, str]) -> Result:
@@ -149,12 +175,17 @@ def accept(target: Path, *, github: bool, template_root: Path) -> AcceptOutcome:
         sync = _run(["uv", "sync", "--locked"], copy)
         synced = sync.returncode == 0
         results.append(Result("env-sync", "pass" if synced else "fail", "" if synced else _last_line(sync)))
-        results.append(Result("example-build", "not-tested", "the build entry point is not implemented yet"))
         if synced:
-            results.append(_render_content(copy, project))
+            built = _example_build(copy, project)
+            results.append(built)
+            if built.status == "pass":
+                results.append(_render_content(copy, project))
+            else:
+                results.append(Result("render-content", "not-tested", "example-build failed"))
+            results.append(_project_checks(copy))
         else:
-            results.append(Result("render-content", "not-tested", "env-sync failed"))
-        results.append(Result("project-checks", "not-tested", "the project checks are not implemented yet"))
+            for check in ["example-build", "render-content", "project-checks"]:
+                results.append(Result(check, "not-tested", "env-sync failed"))
         results.append(_provenance(copy, generated))
 
     manual = "run by hand before each release; see the compatibility file"
