@@ -19,6 +19,7 @@ from pypdf import PdfReader
 
 from starter.answers import AnswersError, load_yaml_strict
 from starter.generate import Refused, template_commit
+from starter.github import github_checks
 from starter.plan import section_title
 
 UNRESOLVED = re.compile(r"\?var:|\?@|\b[A-Za-z][A-Za-z0-9_:-]*\?\)")
@@ -191,8 +192,9 @@ def accept(target: Path, *, github: bool, template_root: Path) -> AcceptOutcome:
     manual = "run by hand before each release; see the compatibility file"
     results.append(Result("agent-session-start", "not-tested", manual))
     results.append(Result("agent-handoff", "not-tested", manual))
-    reason = "the GitHub checks are not implemented yet" if github else "requires --github"
-    results.append(Result("gh-ci", "not-tested", reason))
-    results.append(Result("gh-preview", "not-tested", reason))
+    if github:
+        results += [Result(check, status, reason) for status, check, reason in github_checks(target)]
+    else:
+        results += [Result(check, "not-tested", "requires --github") for check in ["gh-ci", "gh-preview"]]
     code = 4 if any(r.status == "fail" for r in results) else 0
     return AcceptOutcome(code, results)

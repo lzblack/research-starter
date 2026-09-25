@@ -23,7 +23,7 @@ Test methods:
 ## Tool assumptions
 
 Tested versions: uv 0.12.18, Python 3.14.7, quarto-cli 1.10.18 (Quarto 1.10.18, Pandoc 3.10,
-Typst 0.15.1), marimo 0.25.0, git 2.43.0.
+Typst 0.15.1), marimo 0.25.0, git 2.43.0, GitHub CLI 2.45.0.
 
 | ID | Assumption | Test | Last verified |
 |---|---|---|---|
