@@ -19,9 +19,10 @@ A pull request must keep CI passing:
 
 ```
 uv sync --locked
-uv run --locked pytest -m "not fixtures"   # unit tests
-uv run --locked pytest -m fixtures         # generate, accept, and build every fixture project
-uv run --locked tools/public_scan.py       # public-content scan
+uv run --locked pytest -m "not fixtures and not compat"   # unit tests
+uv run --locked pytest -m fixtures                        # generate, accept, and build every fixture
+uv run --locked tools/public_scan.py                      # public-content scan
+uv run --locked pytest -m compat -o addopts=""            # external tool behaviors (network; weekly in CI)
 ```
 
 ## Content rules

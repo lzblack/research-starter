@@ -7,7 +7,7 @@ verification date. The evidence for E1 to E10 is described in appendix A11.3.
 Test methods:
 
 - **fixture CI**: exercised by every run of the template repository's CI (appendix A7.4).
-- **scheduled**: to run in a scheduled workflow that needs no agent session.
+- **scheduled**: runs weekly in `.github/workflows/compat.yml` (`tests/test_compat.py`).
 - **manual**: checked by hand before each release and recorded here.
 - **planned**: not yet automated; the milestone that adds it is named.
 
@@ -27,16 +27,16 @@ Typst 0.15.1), marimo 0.25.0, git 2.43.0, GitHub CLI 2.45.0.
 
 | ID | Assumption | Test | Last verified |
 |---|---|---|---|
-| E1 | The `quarto-cli` source distribution downloads the release archive for its own version and platform | planned (scheduled) | 2026-09-24 |
-| E2 | `uv sync` installs a working Quarto from `quarto-cli`, and a warm cache syncs offline | fixture CI (`env-sync`) for installation; offline sync planned (scheduled) | 2026-09-24 |
-| E3 | The standalone release archive matches its published checksum | planned (scheduled) | 2026-09-24 |
+| E1 | The `quarto-cli` source distribution downloads the release archive for its own version and platform | scheduled | 2026-09-24 |
+| E2 | `uv sync` installs a working Quarto from `quarto-cli`, and a warm cache syncs offline | fixture CI (`env-sync`); offline sync: scheduled | 2026-09-24 |
+| E3 | The release publishes checksums for the Linux and macOS archives (the Linux aarch64 archive matched its checksum locally) | scheduled | 2026-09-24 |
 | E4 | Quarto renders docx and Typst PDF with variables, numbered sections, cross-references, a PNG figure, and citations, without LaTeX | fixture CI (`render-content`) | 2026-09-24 |
-| E5 | Unresolved variables, cross-references, and citations do not make rendering fail; a combined render that fails leaves the other format's file | planned (scheduled) | 2026-09-24 |
-| E6 | `python <notebook>` stops at the first failing marimo cell and exits non-zero; relative paths resolve against the working directory | successful runs: fixture CI (`build.py analyze`); failure behavior planned (scheduled) | 2026-09-24 |
-| E7 | Underscore crossref labels resolve; `.quote` spans render as text; unknown BibTeX fields are ignored | planned (M3, check fixtures) | 2026-09-24 |
-| E8 | Default citation style, `--output-dir` staging, disabled execution, notebook exit code 3, lockfile with a substituted project name | lockfile and `--output-dir`: fixture CI (`env-sync`, `build.py paper`); exit code 3: build unit tests with a plain script; the rest planned (scheduled) | 2026-09-24 |
-| E9 | Switching Python within `requires-python` needs no new lock; below the floor needs `uv lock` first | planned (scheduled) | 2026-09-24 |
-| E10 | Without `.python-version`, uv uses an installed interpreter within the range, not the newest release | planned (scheduled) | 2026-09-24 |
+| E5 | Unresolved variables, cross-references, and citations do not make rendering fail; a combined render that fails leaves the other format's file | scheduled | 2026-09-24 |
+| E6 | `python <notebook>` stops at the first failing marimo cell and exits non-zero; relative paths resolve against the working directory | fixture CI (`build.py analyze`); failure behavior: scheduled | 2026-09-24 |
+| E7 | Underscore crossref labels resolve; `.quote` spans render as text; unknown BibTeX fields are ignored | scheduled | 2026-09-24 |
+| E8 | Default citation style, `--output-dir` staging, disabled execution, notebook exit code 3, lockfile with a substituted project name | fixture CI (`env-sync`, `build.py paper`); disabled execution and `--output-dir`: scheduled; exit code 3: scheduled | 2026-09-24 |
+| E9 | Switching Python within `requires-python` needs no new lock; below the floor needs `uv lock` first | scheduled | 2026-09-24 |
+| E10 | Without `.python-version`, uv uses an installed interpreter within the range, not the newest release | scheduled | 2026-09-24 |
 | E11 | An include inside an included section file resolves its path relative to the main document (`paper/`), not the section file | fixture CI (`render-content`) | 2026-09-24 |
 | E12 | Pushing files under `.github/workflows/` with an OAuth token needs the `workflow` scope | manual (provisioning, M5) | 2026-09-24 |
 | E13 | Claude Code reads `AGENTS.md` without `CLAUDE.md`; a `CLAUDE.md` containing `@AGENTS.md` imports it | manual (`tools/agent_smoke.py`) | 2026-09-24 |

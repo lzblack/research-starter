@@ -1,0 +1,22 @@
+# Weekly check of the external tool behaviors listed in docs/compatibility.md, so that drift in
+# Quarto, uv, or marimo is caught before users hit it (PRD section 17).
+name: compat
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compat:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.18"
+      - run: uv sync --locked
+      - run: uv run --locked pytest -m compat -o addopts="" -v

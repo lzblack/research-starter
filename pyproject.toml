@@ -22,4 +22,6 @@ testpaths = ["tests"]
 pythonpath = ["."]
 markers = [
     "fixtures: end-to-end runs over the fixture answer files (slow; first run downloads Quarto)",
+    "compat: external tool behaviors from docs/compatibility.md (network; run weekly)",
 ]
+addopts = "-m 'not compat'"
