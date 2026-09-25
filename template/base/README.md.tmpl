@@ -32,6 +32,17 @@ Notebooks write paper inputs through `notebooks/paper_outputs.py`. The paper use
 `![caption](outputs/figures/id.png){#fig-id}` with `@fig-id`. Only `build.py analyze` updates the
 committed files under `paper/outputs/`.
 
+## Working with agents
+
+Agents read `AGENTS.md`. Recurring procedures are skills in `.agents/skills/`, listed in
+`AGENTS.md`. Invoke one with `/<skill>` in Claude Code or `$<skill>` in Codex. Add your own skills
+to the same folder; `.claude/skills` links to it, so every agent sees the same set.
+
+Each session should cover one issue and end with a handoff, which writes a journal entry and any
+decisions to the repository. The repository, not an agent's own memory, is the shared record, so
+the next session can start fresh. Start a new session after each handoff; a long session
+accumulates code, data samples, and tool output that make agents less reliable.
+
 ## Python version
 
 The Python version is set in `.python-version`, and uv installs it when needed.
