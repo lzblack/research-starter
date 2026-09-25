@@ -275,3 +275,26 @@ def test_cli_invalid_answers(answers: Path, target: Path) -> None:
     result = cli("generate", "--answers", answers, "--target", target, "--allow-dirty")
     assert result.returncode == 3
     assert "error: mode: must be one of: solo, team" in result.stderr
+
+
+def test_symlinks_are_created_and_compared(template_repo: Path, answers: Path, target: Path) -> None:
+    write(template_repo / "template" / "base" / ".claude" / "skills.symlink", "../.agents/skills\n")
+    write(template_repo / "template" / "base" / ".agents" / "skills" / "x" / "SKILL.md", "x\n")
+    git(template_repo, "add", "-A")
+    git(template_repo, "commit", "-q", "-m", "link")
+    first = run(template_repo, answers, target)
+    assert first.code == 0 and verbs(first)[".claude/skills"] == "create"
+    link = target / ".claude" / "skills"
+    assert link.is_symlink() and os.readlink(link) == "../.agents/skills"
+    assert (link / "x" / "SKILL.md").read_text() == "x\n"
+    assert verbs(run(template_repo, answers, target))[".claude/skills"] == "same"
+    link.unlink()
+    link.mkdir()
+    assert verbs(run(template_repo, answers, target))[".claude/skills"] == "conflict"
+
+
+def test_leftover_temporary_link_is_removed(template_repo: Path, answers: Path, target: Path) -> None:
+    run(template_repo, answers, target)
+    os.symlink("..", target / ".rs-tmp-link")
+    assert run(template_repo, answers, target).code == 0
+    assert not os.path.lexists(target / ".rs-tmp-link")

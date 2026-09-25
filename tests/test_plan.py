@@ -107,3 +107,16 @@ def test_caches_are_skipped(tree: Path) -> None:
     write(tree / "base" / "sub" / ".DS_Store", b"\0")
     files = plan_for(tree).files
     assert not [name for name in files if "__pycache__" in name or ".DS_Store" in name]
+
+
+def test_symlink_entries(tree: Path) -> None:
+    write(tree / "base" / ".claude" / "skills.symlink", "../.agents/skills\n")
+    spec = plan_for(tree).files[".claude/skills"]
+    assert spec.link == "../.agents/skills" and spec.content == b""
+
+
+@pytest.mark.parametrize("target", ["/etc", "../../outside", ""])
+def test_symlink_must_stay_inside(tree: Path, target: str) -> None:
+    write(tree / "base" / ".claude" / "skills.symlink", target + "\n")
+    with pytest.raises(TemplateError):
+        plan_for(tree)

@@ -104,6 +104,8 @@ def _classify(target: Path, path: str, spec: FileSpec) -> str:
     dest = target / path
     if not os.path.lexists(dest):
         return "create"
+    if spec.link is not None:
+        return "same" if dest.is_symlink() and os.readlink(dest) == spec.link else "conflict"
     if dest.is_symlink() or not dest.is_file():
         return "conflict"
     same_bytes = dest.read_bytes() == spec.content
@@ -113,7 +115,10 @@ def _classify(target: Path, path: str, spec: FileSpec) -> str:
 
 def _remove_leftovers(target: Path) -> None:
     for dirpath, dirnames, filenames in os.walk(target):
-        dirnames[:] = [d for d in dirnames if d != ".git"]
+        for name in [d for d in dirnames if d.startswith(TEMP_PREFIX)]:
+            if os.path.islink(os.path.join(dirpath, name)):
+                os.unlink(os.path.join(dirpath, name))
+        dirnames[:] = [d for d in dirnames if d != ".git" and not d.startswith(TEMP_PREFIX)]
         for name in filenames:
             if name.startswith(TEMP_PREFIX):
                 os.unlink(os.path.join(dirpath, name))
@@ -121,6 +126,13 @@ def _remove_leftovers(target: Path) -> None:
 
 def _write_atomic(dest: Path, spec: FileSpec) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
+    if spec.link is not None:
+        tmp = dest.with_name(f"{TEMP_PREFIX}{dest.name}")
+        if os.path.lexists(tmp):
+            os.unlink(tmp)
+        os.symlink(spec.link, tmp)
+        os.replace(tmp, dest)
+        return
     fd, tmp = tempfile.mkstemp(dir=dest.parent, prefix=TEMP_PREFIX)
     try:
         with os.fdopen(fd, "wb") as handle:
