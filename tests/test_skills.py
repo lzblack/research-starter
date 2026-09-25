@@ -169,3 +169,28 @@ def test_add_paper_without_doi_field_keeps_valid_braces(paper) -> None:
     assert entry.count("{") == entry.count("}")
     meta = paper.fields("@book" + entry)
     assert meta["year"] == "2020" and meta["doi"] == "10.1234/abc"
+
+
+def test_same_person_same_day_on_two_branches(repo: Path, capsys) -> None:
+    """Two sessions by one person on one day, on parallel branches, merge without conflicts (PRD 10)."""
+    commit(repo, "base")
+    ids = []
+    for branch in ["first", "second"]:
+        git(repo, "switch", "-q", "-c", branch, "main")
+        session_id, journal = run_session(repo, capsys, "new", "--at", "2026-01-15T09:30Z").split()
+        decision = run_session(repo, capsys, "decision-id", "same-topic", "--date", "2026-01-15").strip()
+        (repo / journal).parent.mkdir(exist_ok=True)
+        (repo / journal).write_text(f"---\nsession: {session_id}\n---\n")
+        (repo / "docs" / "decisions").mkdir(parents=True, exist_ok=True)
+        (repo / "docs" / "decisions" / f"{decision}.md").write_text(f"---\nid: {decision}\n---\n")
+        git(repo, "add", "-A")
+        commit(repo, f"handoff on {branch}", session_id)
+        ids.append((session_id, decision))
+    assert ids[0][0] != ids[1][0] and ids[0][1] != ids[1][1]
+    git(repo, "switch", "-q", "main")
+    git(repo, "merge", "-q", "--no-ff", "first", "-m", "merge first")
+    git(repo, "merge", "-q", "--no-ff", "second", "-m", "merge second")
+    assert len(list((repo / "journal").glob("*.md"))) == 2
+    assert len(list((repo / "docs" / "decisions").glob("*.md"))) == 2
+    out = run_session(repo, capsys, "uncovered")
+    assert "handoff on" not in out and "base" not in out
