@@ -110,7 +110,9 @@ def add(raw_doi: str, fetcher=fetch) -> tuple[int, str]:
     key = make_key(meta, keys)
     entry = re.sub(r"^@(\w+)\s*\{[^,]*,", lambda m: f"@{m.group(1).lower()}{{{key},", entry, count=1)
     if "doi" not in meta:
-        entry = entry.rstrip().rstrip("}").rstrip().rstrip(",") + f",\n  doi = {{{doi}}}\n}}"
+        body = entry.rstrip()
+        body = body[:-1] if body.endswith("}") else body
+        entry = body.rstrip().rstrip(",") + f",\n  doi = {{{doi}}}\n}}"
     BIB.parent.mkdir(parents=True, exist_ok=True)
     separator = "" if not current or current.endswith("\n\n") else ("\n" if current.endswith("\n") else "\n\n")
     BIB.write_text(current + separator + entry + "\n", encoding="utf-8")

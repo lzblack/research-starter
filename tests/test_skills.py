@@ -160,3 +160,12 @@ def test_add_paper_failure_writes_nothing(paper, failure) -> None:
 
 def test_add_paper_rejects_non_doi(paper) -> None:
     assert paper.add("not-a-doi", fetcher=lambda doi: BIBTEX)[0] == 1
+
+
+def test_add_paper_without_doi_field_keeps_valid_braces(paper) -> None:
+    code, _ = paper.add("10.1234/abc", fetcher=lambda doi: "@book{X, title={A Book}, year={2020}}")
+    assert code == 0
+    entry = paper.BIB.read_text().split("@book")[1]
+    assert entry.count("{") == entry.count("}")
+    meta = paper.fields("@book" + entry)
+    assert meta["year"] == "2020" and meta["doi"] == "10.1234/abc"
