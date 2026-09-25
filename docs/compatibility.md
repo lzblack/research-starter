@@ -42,6 +42,7 @@ Typst 0.15.1), marimo 0.25.0, git 2.43.0, GitHub CLI 2.45.0.
 | E13 | Claude Code reads `AGENTS.md` without `CLAUDE.md`; a `CLAUDE.md` containing `@AGENTS.md` imports it | manual (`tools/agent_smoke.py`) | 2026-09-24 |
 | E14 | Claude Code loads project skills only from `.claude/skills/` and follows a directory link to `.agents/skills`; Codex loads `.agents/skills/` and runs `$<skill>` | manual (`tools/agent_smoke.py`) | 2026-09-24 |
 | E15 | Codex's bubblewrap sandbox fails on Ubuntu 24.04 when unprivileged user namespaces are restricted by AppArmor | manual | 2026-09-24 |
+| E16 | The generated project's workflow renders and checks on `ubuntu-24.04` and uploads `paper-preview` on push; `gh run list` and the artifacts API report it | not verified against GitHub; unit tests use a simulated GitHub CLI; an end-to-end run needs a scratch repository | none |
 
 ## Per-agent table
 
