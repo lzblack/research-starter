@@ -1,6 +1,6 @@
 # research-starter
 
-> **Status: pre-release.** Design in progress; nothing is usable yet. Expect breaking changes.
+> **Status: pre-release (v0, piloting).** Usable for pilot projects. Expect breaking changes until 1.0.
 
 A starter template for empirical research projects done with AI coding agents.
 People make the research decisions; agents help with execution and checking.
