@@ -16,6 +16,22 @@ This repository stays private. Any public release is prepared manually by the ow
 2. Run `uv sync`. It installs Python, Quarto, and the other tools.
 3. Enable the pre-commit hook: `git config core.hooksPath .githooks`.
 
+## Building
+
+`uv run build.py all` regenerates everything downstream of the data already in place:
+
+| Command | Does |
+|---|---|
+| `uv run build.py prepare` | runs the preparation scripts listed in `pyproject.toml` |
+| `uv run build.py analyze` | runs the notebooks headless and collects their variables, tables, and figures |
+| `uv run build.py paper` | renders the paper into `paper/_output/` |
+| `uv run build.py check` | checks the paper inputs |
+
+Notebooks write paper inputs through `notebooks/paper_outputs.py`. The paper uses them as
+`{{< var id >}}`, `{{< include outputs/tables/id.md >}}` with `@tbl-id`, and
+`![caption](outputs/figures/id.png){#fig-id}` with `@fig-id`. Only `build.py analyze` updates the
+committed files under `paper/outputs/`.
+
 ## Python version
 
 The Python version is set in `.python-version`, and uv installs it when needed.

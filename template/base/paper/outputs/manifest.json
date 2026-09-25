@@ -1,0 +1,48 @@
+{
+  "artifacts": [
+    {
+      "file": "paper/outputs/figures/example_figure.png",
+      "id": "example_figure",
+      "inputs": [
+        {
+          "path": "data/derived/example.parquet",
+          "sha256": "1b4aecabd134cdf71f15a1cb73690c58532e1453cee035ac80a76ecd2a86490d"
+        }
+      ],
+      "kind": "figure",
+      "producer": "notebooks/example.py",
+      "producer_sha256": "7f397584cd37074fc0d3e53b68986925b94f3130eeda75c2b120dacf4d494dd6",
+      "sha256": "8a5f75e320426af3c7fcbc6fb560107bb60b0a55c50d6ea0e15cec33548b0eab"
+    },
+    {
+      "file": "paper/outputs/variables/example.yml",
+      "id": "example_n_obs",
+      "inputs": [
+        {
+          "path": "data/derived/example.parquet",
+          "sha256": "1b4aecabd134cdf71f15a1cb73690c58532e1453cee035ac80a76ecd2a86490d"
+        }
+      ],
+      "kind": "variable",
+      "producer": "notebooks/example.py",
+      "producer_sha256": "7f397584cd37074fc0d3e53b68986925b94f3130eeda75c2b120dacf4d494dd6",
+      "sha256": "a74c8958ff874708ea0085ba54eec7881b7f0131aec847c580010d65afa1cb7a"
+    },
+    {
+      "file": "paper/outputs/tables/example_table.md",
+      "id": "example_table",
+      "inputs": [
+        {
+          "path": "data/derived/example.parquet",
+          "sha256": "1b4aecabd134cdf71f15a1cb73690c58532e1453cee035ac80a76ecd2a86490d"
+        }
+      ],
+      "kind": "table",
+      "producer": "notebooks/example.py",
+      "producer_sha256": "7f397584cd37074fc0d3e53b68986925b94f3130eeda75c2b120dacf4d494dd6",
+      "sha256": "19060d5883b35fb5d4b5829c4cb6261cbd312fdb553466c65f2da7740534c8d9"
+    }
+  ],
+  "schema": 1,
+  "variables_sha256": "a74c8958ff874708ea0085ba54eec7881b7f0131aec847c580010d65afa1cb7a"
+}

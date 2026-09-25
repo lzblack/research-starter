@@ -1,6 +1,6 @@
-| Model | Estimate |
+| Model | Estimate for x |
 |---|---|
-| Synthetic A | 0.42 |
-| Synthetic B | 0.51 |
+| Bivariate | 0.64 |
+| With control z | 0.48 |
 
 : Synthetic example estimates {#tbl-example_table}

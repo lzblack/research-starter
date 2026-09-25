@@ -7,6 +7,13 @@ Instructions for AI agents working on @@name@@.
 Write everything in this repository (code comments, docs, journal, decisions, commit messages,
 issues) in the language with tag `@@language@@`, whatever language the conversation uses.
 
+## Commands
+
+- `uv run build.py all` regenerates results and the paper; run it after changing data, scripts, or
+  notebooks. Single stages: `prepare`, `analyze`, `paper`, `check`.
+- Notebooks write paper inputs only through `notebooks/paper_outputs.py`. Never type a result
+  number into the paper; use `{{< var id >}}`.
+
 ## Checks
 
 - Enable the pre-commit hook once per clone: `git config core.hooksPath .githooks`.
