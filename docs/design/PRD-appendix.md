@@ -965,7 +965,8 @@ section 12).
   repository's artifact retention setting; setup does not change it.
 - Status: previews are mutable working drafts and are not citable. They are never git tags or
   GitHub releases.
-- Access: access follows GitHub's rules for workflow artifacts (to be verified in M5). Readers
+- Access: access follows GitHub's rules for workflow artifacts. For a private repository,
+  members download it with `gh run download` (verified on 2026-09-25, E16). Readers
   without GitHub receive documents manually (PRD section 9a).
 
 ### A10.2 Milestone releases
