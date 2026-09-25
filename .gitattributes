@@ -1,0 +1,2 @@
+# Template files must have identical bytes on every platform (appendix A3.1).
+* text=auto eol=lf
