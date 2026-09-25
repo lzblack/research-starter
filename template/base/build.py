@@ -407,32 +407,53 @@ def check_manifest(root: Path) -> list[str]:
     return problems
 
 
-CHECKS = {"manifest": check_manifest}
+def load_checks() -> Any:
+    """Load checks.py from beside this file (it is not an installed package)."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("project_checks", Path(__file__).resolve().parent / "checks.py")
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
 
 
-def stage_check(root: Path) -> None:
-    failed = False
-    for name, check in CHECKS.items():
-        try:
-            problems = check(root)
-        except StageError as exc:
-            problems = [str(exc)]
-        print(f"{'fail' if problems else 'pass'} {name}")
-        for problem in problems:
+def stage_check(root: Path, staged: bool = False) -> None:
+    checks = load_checks()
+
+    def manifest(project: Any) -> Any:
+        return checks.result("manifest", check_manifest(project.root))
+
+    results = checks.run(root, staged=staged, extra={"manifest": manifest})
+    for item in results:
+        print(f"{item.status} {item.check}")
+        for problem in item.problems:
             print(f"  {problem}")
-        failed = failed or bool(problems)
-    if failed:
+    if not staged:
+        write_crosswalk(root, checks.crosswalk(root))
+    if any(item.status == "fail" for item in results):
         raise StageError(FAIL, "one or more checks failed")
+
+
+def write_crosswalk(root: Path, rows: list[dict[str, str]]) -> None:
+    import csv
+    import io
+
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, ["location", "reference", "artifact_id", "kind", "producer"], lineterminator="\n")
+    writer.writeheader()
+    writer.writerows(rows)
+    write_atomic(root / ".build" / "reports" / "crosswalk.csv", buffer.getvalue().encode())
 
 
 # --- main --------------------------------------------------------------------------------------
 
 
-def run_stage(root: Path, stage: str) -> None:
+def run_stage(root: Path, stage: str, staged: bool = False) -> None:
     if stage == "paper":
         stage_paper(root)
     elif stage == "check":
-        stage_check(root)
+        stage_check(root, staged)
     else:
         config = load_config(root)
         (stage_prepare if stage == "prepare" else stage_analyze)(root, config)
@@ -441,12 +462,15 @@ def run_stage(root: Path, stage: str) -> None:
 def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
     parser = argparse.ArgumentParser(prog="build.py", description="Regenerate results and the paper.")
     parser.add_argument("stage", choices=["all", *STAGES])
+    parser.add_argument("--staged", action="store_true", help="check: only the data-exposure checks, on staged files")
     args = parser.parse_args(argv)
+    if args.staged and args.stage != "check":
+        parser.error("--staged applies only to the check stage")
     stages = STAGES if args.stage == "all" else [args.stage]
     code = 0
     for index, stage in enumerate(stages):
         try:
-            run_stage(root, stage)
+            run_stage(root, stage, args.staged)
             print(f"stage {stage}: {PASS}")
         except StageError as exc:
             print(f"error: {exc}", file=sys.stderr)

@@ -39,7 +39,7 @@ def project(tmp_path: Path) -> Path:
     (root / "notebooks" / "paper_outputs.py").write_text(HELPER)
     (root / "data").mkdir()
     (root / "data" / "input.csv").write_text("x\n1\n")
-    (root / "data" / "README.md").write_text("---\ndatasets:\n  - id: remote\n    version: '2026-01'\n---\n")
+    (root / "data" / "README.md").write_text("---\ndatasets:\n  - id: remote\n    tier: public\n    license: CC0-1.0\n    raw: false\n    version: '2026-01'\n---\n")
     configure(root, analyze=["notebooks/a.py"])
     write_step(root, "a", 'o = Outputs("a")\no.input("data/input.csv")\no.variable("n_obs", "1,000")\n'
                + FRAME + 'o.table("main", Frame(), "Main")\n'

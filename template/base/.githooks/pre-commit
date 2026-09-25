@@ -1,3 +1,4 @@
 #!/bin/sh
-# Pre-commit hook. The data-exposure checks are added here with the build entry point.
-exit 0
+# Data-exposure checks on the staged files: declared dataset paths, forbidden file types, file
+# size, named secret patterns, and a warning-only scan for personal identifiers.
+exec uv run --locked build.py check --staged
