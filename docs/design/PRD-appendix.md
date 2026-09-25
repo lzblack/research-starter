@@ -241,8 +241,8 @@ it if so, so an interrupted run is resumed by running it again.
 5. Run the GitHub integration checks (`accept --github`).
 
 Required access: an authenticated GitHub CLI session with permission to push (including workflow
-files) and to create issues in the repository. The exact token scopes are verified in M5 and
-recorded in the compatibility file (A11.4).
+files) and to create issues in the repository. For an OAuth token these are the `repo` and
+`workflow` scopes; pushing workflow files without `workflow` is rejected (E12).
 
 `provision` and `accept` run from a template checkout at the recorded template commit. The bootstrap
 instructions keep the temporary checkout until provisioning completes, or check out the recorded
@@ -1001,7 +1001,7 @@ Windows is deferred (PRD section 19a).
 | Python | 3.14 (`.python-version`); `requires-python = ">=3.12"`; 3.14.7 tested | uv | see "Python version" below |
 | Quarto | 1.10.18, pinned exactly as `quarto-cli==1.10.18` | uv, from PyPI | bundles Pandoc 3.10, Typst 0.15.1, Dart Sass 1.101.0, Deno 2.7.14; no LaTeX or browser needed |
 | marimo | 0.25.0, locked | uv | |
-| GitHub CLI | recorded in M5 | user prerequisite, for provisioning only | |
+| GitHub CLI | 2.45.0 tested | user prerequisite, for provisioning only | needs the `repo` and `workflow` scopes |
 
 Quarto is installed through uv as the `quarto-cli` package. It meets PRD section 4's condition for
 a packaged distribution on the evidence below, with these known limits:

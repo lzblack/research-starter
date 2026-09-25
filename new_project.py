@@ -4,6 +4,7 @@ Run from a checkout of the template repository:
 
     uv run new_project.py generate --answers answers.yml --target ../my-project
     uv run new_project.py accept --target ../my-project
+    uv run new_project.py provision --target ../my-project --remote https://github.com/OWNER/REPO
 """
 
 import argparse
@@ -13,6 +14,7 @@ from pathlib import Path
 
 from starter.accept import accept
 from starter.generate import generate
+from starter.github import github_checks, provision
 
 ROOT = Path(__file__).resolve().parent
 
@@ -42,9 +44,16 @@ def main(argv: list[str] | None = None) -> int:
     acc.add_argument("--target", required=True, type=Path)
     acc.add_argument("--github", action="store_true")
 
+    prov = commands.add_parser("provision", help="add the GitHub remote, push, and create the initial issues")
+    prov.add_argument("--target", required=True, type=Path)
+    prov.add_argument("--remote", required=True)
+    prov.add_argument("--first-task", action="append", default=[], dest="first_tasks")
+
     args = parser.parse_args(argv)
     if args.command == "accept":
         return _accept(args)
+    if args.command == "provision":
+        return _provision(args)
     try:
         outcome = generate(
             args.answers,
@@ -78,6 +87,23 @@ def _accept(args: argparse.Namespace) -> int:
     for location, message in outcome.errors:
         print(f"error: {location}: {message}", file=sys.stderr)
     return outcome.code
+
+
+def _provision(args: argparse.Namespace) -> int:
+    target = args.target.resolve()
+
+    def accept_local(path: Path) -> bool:
+        outcome = accept(path, github=False, template_root=ROOT)
+        return outcome.code == 0
+
+    try:
+        report = provision(target, args.remote, args.first_tasks, accept_local=accept_local, github_checks=github_checks)
+    except Exception as exc:  # noqa: BLE001 - report any defect with the documented exit code
+        print(f"error: -: internal error: {exc!r}", file=sys.stderr)
+        return 1
+    for line in report.lines:
+        print(line)
+    return report.code
 
 
 if __name__ == "__main__":

@@ -1,0 +1,38 @@
+# Renders the paper from the committed outputs and runs the checks. It never runs prepare or
+# analyze, which may need data that CI does not have. On a successful push to main it uploads
+# the preview artifact `paper-preview`: a mutable working draft, not a citable release.
+name: paper
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  render-and-check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.18"
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run --locked build.py paper
+      - run: uv run --locked build.py check
+      - name: Record build information
+        if: github.event_name == 'push'
+        run: uv run --locked python .github/scripts/build_info.py
+      - uses: actions/upload-artifact@v7
+        if: github.event_name == 'push'
+        with:
+          name: paper-preview
+          path: |
+            paper/_output/*.docx
+            paper/_output/*.pdf
+            paper/outputs/manifest.json
+            .build/build-info.json
+          if-no-files-found: error
