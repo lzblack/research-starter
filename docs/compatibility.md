@@ -7,7 +7,8 @@ verification date. The evidence for E1 to E10 is described in appendix A11.3.
 Test methods:
 
 - **fixture CI**: exercised by every run of the template repository's CI (appendix A7.4).
-- **scheduled**: runs weekly in `.github/workflows/compat.yml` (`tests/test_compat.py`).
+- **scheduled**: runs weekly in `.github/workflows/compat.yml` (`tests/test_compat.py`). First run:
+  all 13 checks passed on `ubuntu-24.04` (x86_64) on 2026-09-25.
 - **manual**: checked by hand before each release and recorded here.
 - **planned**: not yet automated; the milestone that adds it is named.
 
