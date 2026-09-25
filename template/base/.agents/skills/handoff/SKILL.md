@@ -63,6 +63,8 @@ can continue from the repository alone. Write everything in the repository langu
    Commit even when nothing else changed (`git commit --allow-empty`), for example when
    `journal/` is gitignored. The trailer is how the next session finds this handoff.
 6. Push if a remote is configured. Report what you wrote and anything you could not do.
+7. If something in the workflow got in the way this session, or worked well, offer to write a
+   retro entry (`docs/retro/`, format in README.md).
 
 Never edit sections listed as human-drafted in AGENTS.md, and never commit files from
 `meetings/raw/` or `private/`.

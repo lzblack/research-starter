@@ -10,13 +10,62 @@ datasets:
 
 # Data
 
-Declare every dataset in the front matter above, with its sensitivity tier and license.
-
 The `example` dataset is synthetic. `scripts/prepare_example.py` creates it from a fixed seed.
 @@if large_store@@
 
 Large data is kept in the configured store: @@data.large_store@@
 @@end@@
+
+## Declaring a dataset
+
+Declare every dataset in the front matter above. `uv run build.py check` validates the
+declarations.
+
+| Field | Meaning |
+|---|---|
+| `id` | a short identifier, used by notebooks as `dataset:<id>` |
+| `tier` | `public`, `licensed`, `confidential` (identifiable people), or `restricted` (a contract or ethics board forbids sharing) |
+| `license` | an SPDX identifier, a license name, or `unknown` |
+| `raw` | `true` for raw data, which is never modified |
+| `paths` | repository paths where the data lives or would be placed, such as `data/raw/survey/` |
+| `location` | where the data is kept outside the repository |
+| `version` | a version or access date, recorded with every output that uses the dataset |
+
+Tier and license are declared separately. Where they impose different rules on storage,
+processing, or release, the most restrictive one applies. Files at the paths of raw datasets, and
+of datasets whose tier is not public, must not be committed; the checks and the pre-commit hook
+refuse them. Small approved derived data may be committed. Large data belongs in the configured
+store. Data is stored as parquet.
+
+## What this project accepts
+
+This project accepts only public, synthetic, or owner-approved derived data. Confidential and
+restricted data do not enter it. The guidance below is for work that happens upstream of this
+project. The template does not provide or verify it.
+
+- **Isolation.** Keeping data outside the working tree, or processing it outside an agent session,
+  does not stop an agent that runs with the same file permissions from reading it. Effective
+  isolation needs a separately provisioned environment with no access to the sensitive data.
+  Agent read-deny settings are an extra layer, never a guarantee.
+- **De-identification.**
+  - Remove direct identifiers.
+  - Replace IDs with keyed hashes whose key lives outside the repository.
+  - Coarsen quasi-identifiers: age bands, broader geography, shifted or coarsened dates.
+  - Scrub names and contact details from free text with a PII detector run locally, and spot-check
+    the result by hand.
+  - Check small cells before release.
+  - Keep any re-identification key separate from the data.
+- **Models.** Send sensitive data only to approved endpoints: an institutional gateway with
+  no-retention terms, or a local model.
+- **Model-based measurements.** Outputs of LLM or other model-based measurement are produced by
+  scripts and stored as data of record with the model, prompt, and date. The build never
+  regenerates them; rerunning creates a new dataset version.
+- **Openness.** Decide for each dataset what can be shared:
+  - the raw data;
+  - the derived data;
+  - identifiers only, so others can rebuild it under their own license;
+  - synthetic data plus access instructions;
+  - an availability statement only.
 
 ## Data availability statement
 
