@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SCOPE = ["template", "tests/fixtures", "docs", "README.md", "AGENTS.md", "CONTRIBUTING.md", "SECURITY.md",
+SCOPE = ["template", "tests/fixtures", "docs", "README.md", "AGENTS.md", "BOOTSTRAP.md", "CONTRIBUTING.md", "SECURITY.md",
          "CHANGELOG.md"]  # fmt: skip
 PATTERNS = ROOT / "tools" / "public_scan_patterns.txt"
 LOCAL = ROOT / ".review" / "public-scan-local.txt"

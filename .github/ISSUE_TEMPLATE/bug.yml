@@ -1,0 +1,21 @@
+name: Bug report
+description: Something in the template, the setup script, the build, or the checks does not work as documented.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead. Include the exact error text.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: The smallest steps or answers file that shows the problem. Use synthetic data only.
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Template commit (from project.yml), operating system and architecture, uv version.
