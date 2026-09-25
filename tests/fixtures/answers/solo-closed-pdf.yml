@@ -1,0 +1,17 @@
+# Solo, closed, pdf only, human-drafted section, review gates, project rules.
+schema: 1
+name: "Synthetic PDF Study"
+slug: solo-closed-pdf
+mode: solo
+visibility: closed
+people:
+  - name: "Researcher A"
+    github: researcher-a
+    role: lead
+writing:
+  formats: [pdf]
+  human_drafted: [conclusion]
+review_gates: [internal-review, submission]
+project_rules: |
+  Use the synthetic dataset only.
+  Keep tables under ten rows.

@@ -1,0 +1,24 @@
+[project]
+name = "research-starter"
+version = "0.0.0"
+description = "Setup tooling for the research-starter project template."
+requires-python = ">=3.12"
+dependencies = [
+    "pypdf>=6.19.0",
+    "ruamel-yaml>=0.19.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+]
+
+[tool.uv]
+package = false
+required-version = ">=0.12.18"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "fixtures: end-to-end runs over the fixture answer files (slow; first run downloads Quarto)",
+]
