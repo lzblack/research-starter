@@ -190,6 +190,34 @@ When the workflow gets in the way, or works well, write a short entry in
 
 These entries are how the template improves.
 
+## Changing course
+
+Research questions shift, and the repository is built to record why.
+
+- **Small changes** (another angle, another method, more or fewer analyses):
+  - Add or remove notebooks, and update the `analyze` list in `pyproject.toml`. The next
+    `uv run build.py analyze` removes outputs that are no longer produced.
+  - Declare new datasets in `data/README.md`.
+  - `uv run build.py check` reports any variable, table, figure, or citation the paper still uses
+    but no longer exists.
+- **A new research question:**
+  - Record the change as a decision, with the handoff skill, and say why. Never edit old
+    decisions; the new one lists the decisions it replaces in `supersedes`.
+  - Update `docs/brief.md` and `docs/status.md`, because agents read them at the start of every
+    session.
+- **Configuration after setup** is changed by hand. Setup cannot be rerun with new answers. When
+  you edit `project.yml`, update the files derived from it too:
+  - Sections: add or remove `paper/sections/<id>.qmd`, reorder the includes in `paper/paper.qmd`,
+    and update `writing.sections` and each person's `owns` in `project.yml`.
+  - People and reviews: update `.github/CODEOWNERS` in a team.
+  - Title and authors: `paper/_quarto.yml`.
+  - Output formats: the `format` entries in `paper/_quarto.yml`.
+  - Slug: usually leave it as it is. If you change it, also change the output file names in
+    `paper/_quarto.yml` and the name in `pyproject.toml`, then run `uv lock`.
+- **Start a new project instead** when the work has become a different study, or when this
+  private repository would need to become public. Never make a private repository public. Close
+  this one with `docs/closure.md` (outcome `merged` or `parked`).
+
 ## Template updates
 
 This project was generated from the research-starter template. The commit is recorded in

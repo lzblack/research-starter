@@ -11,6 +11,11 @@ agent, applies it by hand:
 
 ## Unreleased
 
+### Added
+
+- Generated projects explain how to change course: recording the change as a decision, updating
+  the brief and status, and editing the configuration and the files derived from it by hand.
+
 ## 0.1.0 (2026-09-25)
 
 The first release, for the pilots. Interfaces may still change before 1.0.
