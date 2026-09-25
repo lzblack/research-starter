@@ -1,0 +1,12 @@
+# Patterns for the public-content scan (tools/public_scan.py), one regular expression per line,
+# matched case-insensitively. They flag likely private identities and non-synthetic examples.
+# A match is reviewed by a person; the scan cannot find every real name.
+\buniversit(y|ies|ät|é|à)\b
+\bcollege\b
+\binstitute of\b
+\bschool of\b
+\bdepartment of\b
+\bstudents?\b
+\badvis[eo]rs?\b
+\bsupervisors?\b
+\bprincipal investigator\b

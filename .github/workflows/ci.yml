@@ -19,6 +19,7 @@ jobs:
           enable-cache: true
       - run: uv sync --locked
       - run: uv run --locked pytest -m "not fixtures"
+      - run: uv run --locked tools/public_scan.py
 
   fixtures:
     strategy:
