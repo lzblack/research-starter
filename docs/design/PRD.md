@@ -565,8 +565,9 @@ built.
 - Windows support.
 - Additional output formats (html) and languages (R, section 19).
 - A devcontainer, and a website offering one-click repository creation through a GitHub App.
+- Several papers in one project, and moving a paper into its own repository.
 
-The notes below record design thinking for two deferred items. They are not requirements.
+The notes below record design thinking for three deferred items. They are not requirements.
 
 **Adoption mode.** Most researchers have projects in progress. Adoption mode would add layers
 without moving existing files:
@@ -582,6 +583,28 @@ without moving existing files:
 
 Setup is safe to rerun and detects existing files, so adoption mode and new-project mode could share
 one flow. Adoption mode is the first candidate after v0, ahead of the website.
+
+**Paper series.** A project may grow into several papers on one topic or dataset. The number is
+not known at setup, and collaborators join and leave. Two needs pull apart: materials (data
+preparation, analysis code, literature notes, method decisions) are shared best across the
+project, while access is granted best per paper, and GitHub grants access per repository. The
+direction, kept minimal until a real case needs more:
+
+1. The first paper stays in `paper/`. Setup is unchanged and asks for no paper identifier.
+2. Further papers get descriptive directory names (for example `paper-pricing/`), not numbers,
+   and are listed in `pyproject.toml`. Build, checks, and CI run for each listed paper. Order and
+   dependencies between papers are written in `docs/brief.md`, not encoded in names, because
+   plans for a series change.
+3. A single researcher or a stable team keeps the series in one repository and shares its
+   materials.
+4. When a paper needs a different access boundary, for example when collaborators join or a
+   public replication package is needed, it moves to its own repository. That repository uses
+   the project's data through declared dataset versions. If it needs shared code, it pins that
+   code as a uv git dependency.
+5. Moving a paper out is a documented manual procedure until repeated use justifies a tool.
+
+Open detail: how a second paper's Quarto project uses outputs stored under `paper/outputs/`. It
+is built when a pilot first produces a paper series.
 
 **Website.** A public site with a button that creates the repository in the user's own GitHub
 account:
