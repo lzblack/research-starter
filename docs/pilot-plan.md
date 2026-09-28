@@ -19,8 +19,14 @@ stay in the maintainer's private notes.
 | Retro entries | the number of entries in `docs/retro/`, by `kind` | the files themselves |
 | Manual migrations | whether each documented migration to a newer template version was followed without errors | a `docs/retro/` entry per migration |
 
-## Decision thresholds
+## How the results are used
 
-Before the pilots start, the maintainer sets thresholds that decide what becomes core, what
-becomes a module, and what is removed. Examples are a minimum setup success rate or a minimum
-handoff coverage. The thresholds are recorded as a decision in `docs/decisions/`.
+The pilots are few, so their results are descriptive and there are no numeric thresholds. They
+follow PRD section 18: build what the pilots use, fix what hurts.
+
+- Every failed setup and every friction that recurs becomes an issue in this repository and is
+  fixed, together with a test or fixture where one applies.
+- A configuration that no pilot exercised, such as team mode or open visibility, is reported as
+  unverified. Its features are not removed for lack of use.
+- When the pilots end, a review of the measures above decides what is core, what becomes a
+  module, and what is removed. The review is recorded as a decision in `docs/decisions/`.
