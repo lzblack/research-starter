@@ -93,7 +93,9 @@ CI renders the paper from the committed outputs and runs the checks on every pus
 - **Quotations.** Write a direct quotation as `[“the quoted text”]{.quote status="verified"}`,
   followed by a citation with a page, for example `[@key, p. 12]`. Use `status="unverifiable"`
   when you cannot check the source page. Never invent a quotation.
-- **One sentence per line** in the section files, so changes are easy to review.
+- **One sentence per line** in the section files, so changes are easy to review. Keep the
+  sentences of a paragraph together, with no blank line between them; a blank line starts a new
+  paragraph. The rendered paper is unchanged.
 - **Ownership.** Each section has one owner (in `project.yml`), who can defend every claim in it.
 @@if human_drafted@@
 - **Human-drafted sections.** These are written by people. Agents may only critique them:
