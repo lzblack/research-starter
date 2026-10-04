@@ -1,14 +1,11 @@
 # Compatibility file
 
-Every assumption the template makes about external tool behavior is listed here (PRD section 17,
-appendix A11.4). Each entry records how it is tested, the tested version, and the last
-verification date. The evidence for E1 to E10 is described in appendix A11.3.
+Every assumption the template makes about external tool behavior is listed here (PRD section 17, appendix A11.4). Each entry records how it is tested, the tested version, and the last verification date. The evidence for E1 to E10 is described in appendix A11.3.
 
 Test methods:
 
 - **fixture CI**: exercised by every run of the template repository's CI (appendix A7.4).
-- **scheduled**: runs weekly in `.github/workflows/compat.yml` (`tests/test_compat.py`). First run:
-  all 13 checks passed on `ubuntu-24.04` (x86_64) on 2026-09-25.
+- **scheduled**: runs weekly in `.github/workflows/compat.yml` (`tests/test_compat.py`). First run: all 13 checks passed on `ubuntu-24.04` (x86_64) on 2026-09-25.
 - **manual**: checked by hand before each release and recorded here.
 - **planned**: not yet automated; the milestone that adds it is named.
 
@@ -23,8 +20,7 @@ Test methods:
 
 ## Tool assumptions
 
-Tested versions: uv 0.12.18, Python 3.14.7, quarto-cli 1.10.18 (Quarto 1.10.18, Pandoc 3.10,
-Typst 0.15.1), marimo 0.25.0, git 2.43.0, GitHub CLI 2.45.0.
+Tested versions: uv 0.12.18, Python 3.14.7, quarto-cli 1.10.18 (Quarto 1.10.18, Pandoc 3.10, Typst 0.15.1), marimo 0.25.0, git 2.43.0, GitHub CLI 2.45.0.
 
 | ID | Assumption | Test | Last verified |
 |---|---|---|---|
@@ -47,8 +43,7 @@ Typst 0.15.1), marimo 0.25.0, git 2.43.0, GitHub CLI 2.45.0.
 
 ## Per-agent table
 
-Verified on 2026-09-24 on Linux aarch64 with `tools/agent_smoke.py` and the discovery experiments
-recorded as E13 to E15.
+Verified on 2026-09-24 on Linux aarch64 with `tools/agent_smoke.py` and the discovery experiments recorded as E13 to E15.
 
 | Field | Claude Code | Codex | pi (best-effort) |
 |---|---|---|---|
@@ -63,9 +58,5 @@ recorded as E13 to E15.
 
 Notes:
 
-- Codex's command sandbox (bubblewrap) could not start on Ubuntu 24.04 with
-  `kernel.apparmor_restrict_unprivileged_userns = 1` (E15). Skill discovery and explicit
-  invocation worked, but shell commands inside the sandbox failed. The smoke checks run Codex
-  without its sandbox, inside a temporary project only.
-- Claude Code reads user-level instructions from the home directory as well. Smoke results can
-  reflect that configuration.
+- Codex's command sandbox (bubblewrap) could not start on Ubuntu 24.04 with `kernel.apparmor_restrict_unprivileged_userns = 1` (E15). Skill discovery and explicit invocation worked, but shell commands inside the sandbox failed. The smoke checks run Codex without its sandbox, inside a temporary project only.
+- Claude Code reads user-level instructions from the home directory as well. Smoke results can reflect that configuration.
