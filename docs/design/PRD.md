@@ -342,6 +342,7 @@ Deferred items. None of these are v0 requirements; each needs its own specificat
 - Additional output formats (html) and languages (R, section 19).
 - A devcontainer, and a website offering one-click repository creation through a GitHub App.
 - Several papers in one project, and moving a paper into its own repository.
+- A rule and check for how generated projects wrap their own Markdown documentation (one paragraph per line), separate from the one-sentence-per-line rule for paper section files.
 
 The notes below record design thinking for three deferred items. They are not requirements.
 
