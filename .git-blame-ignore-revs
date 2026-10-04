@@ -1,3 +1,5 @@
 # Formatting-only commits. Use with: git config blame.ignoreRevsFile .git-blame-ignore-revs
 # Reflow repository Markdown to one paragraph or list item per line
 bb655eed4f5df9d40dc76f401aaab1e3c0e2d5c4
+# Reflow template Markdown to one paragraph or list item per line
+80fe796f1d00da0b11b5bce12fc2bf8dbd9252c1

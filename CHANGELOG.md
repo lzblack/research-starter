@@ -15,9 +15,12 @@ Optional, for projects generated from 0.1.1 or earlier. Documentation only:
 1. Replace the "One sentence per line" item under "Writing the paper" in the project's README.md with the one in `template/base/README.md.tmpl`.
 2. Replace the first rule under "Paper" in the project's AGENTS.md with the first two rules there in `template/base/AGENTS.md.tmpl`.
 
+The reflow of template Markdown changes no rendered text and needs no migration.
+
 ### Changed
 
 - Generated projects state the one-sentence-per-line rule for section files precisely: sentences of one paragraph stay together without blank lines, and the rendered paper is unchanged.
+- Template Markdown files are written one paragraph or list item per line instead of being wrapped at a fixed column. Rendered text is unchanged.
 
 ## 0.1.1 (2026-09-25)
 

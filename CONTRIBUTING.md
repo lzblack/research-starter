@@ -23,6 +23,6 @@ uv run --locked pytest -m compat -o addopts=""            # external tool behavi
 ## Content rules
 
 - Everything in the repository is in English.
-- Markdown prose is written one paragraph or list item per line, not wrapped at a fixed column. Files under `template/` follow their own conventions.
+- Markdown prose is written one paragraph or list item per line, not wrapped at a fixed column.
 - Template content, fixtures, examples, and documentation contain no private identities (personal names, email addresses, institutions) and no non-synthetic research examples. Examples use synthetic data. Required attribution, license notices, citation metadata, and names of public tools and projects are allowed.
 - Files under `template/` are licensed MIT-0 ([LICENSE-TEMPLATE](LICENSE-TEMPLATE)). By contributing to them you agree to that license. Third-party files keep their own license notice and source.

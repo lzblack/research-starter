@@ -1,4 +1,4 @@
-"""Markdown in this repository is written one paragraph or list item per line (docs/decisions/2026-10-04-markdown-line-breaks.md)."""
+"""Markdown in this repository, including template/, is written one paragraph or list item per line (docs/decisions/2026-10-04-*markdown-line-breaks.md)."""
 
 import re
 import subprocess
@@ -8,7 +8,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 RULE_DATE = "2026-10-04"
-LEAF_START = re.compile(r"(#{1,6}\s|\||<|```|~~~|(-{3,}|\*{3,}|_{3,})\s*$|\[[^\]]+\]:\s)")
+LEAF_START = re.compile(r"(@@|#{1,6}\s|\||<|```|~~~|(-{3,}|\*{3,}|_{3,})\s*$|\[[^\]]+\]:\s)")
 ITEM_START = re.compile(r"([-*+]|\d+[.)])\s")
 
 
@@ -43,14 +43,12 @@ def hard_wraps(text: str) -> list[int]:
 
 
 def in_scope(path: str) -> bool:
-    if path.startswith("template/"):
-        return False
     name = Path(path).name
     return not (path.startswith("docs/decisions/") and name[:10] < RULE_DATE)
 
 
 def tracked_markdown() -> list[str]:
-    out = subprocess.run(["git", "ls-files", "*.md"], cwd=ROOT, capture_output=True, text=True, check=True).stdout
+    out = subprocess.run(["git", "ls-files", "*.md", "*.md.tmpl"], cwd=ROOT, capture_output=True, text=True, check=True).stdout
     return [p for p in out.splitlines() if in_scope(p)]
 
 
@@ -69,6 +67,7 @@ def tracked_markdown() -> list[str]:
         ("Hard break  \nnext line.\n\nA backslash\\\nbreak.\n", []),
         ("---\ntitle: x\nauthor: y\n---\n\nText.\n", []),
         ("Text.\n[ref]: https://example.org\n", []),
+        ("Intro:\n@@list:people@@\n@@if open@@\nOpen text.\n@@end@@\n", []),
     ],
 )
 def test_hard_wraps(text: str, expected: list[int]) -> None:
@@ -79,7 +78,7 @@ def test_scope() -> None:
     assert in_scope("docs/design/PRD.md") and in_scope("README.md")
     assert in_scope(f"docs/decisions/{RULE_DATE}-markdown-line-breaks.md")
     assert not in_scope("docs/decisions/2026-09-24-v0-scope.md")
-    assert not in_scope("template/base/README.md")
+    assert in_scope("template/base/README.md.tmpl")
 
 
 def test_repository_markdown_is_not_hard_wrapped() -> None:
