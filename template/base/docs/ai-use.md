@@ -1,7 +1,6 @@
 # AI use
 
-A summary of AI assistance in this project, for disclosure statements. The consolidate skill
-refreshes it from the `AI-Assisted:` commit trailers and the journal.
+A summary of AI assistance in this project, for disclosure statements. The consolidate skill refreshes it from the `AI-Assisted:` commit trailers and the journal.
 
 ## Tools
 

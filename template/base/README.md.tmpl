@@ -3,8 +3,7 @@
 @@description@@
 
 @@if open@@
-This repository is public from the start. Everything committed to it is public, including
-`journal/` while it is tracked (see "Material that may not belong here").
+This repository is public from the start. Everything committed to it is public, including `journal/` while it is tracked (see "Material that may not belong here").
 @@end@@
 @@if not open@@
 This repository stays private. Any public release is prepared manually by the owner.
@@ -14,29 +13,19 @@ This repository stays private. Any public release is prepared manually by the ow
 
 1. Install [uv](https://docs.astral.sh/uv/).
 2. Run `uv sync`. It installs Python, Quarto, and the other tools.
-3. Enable the pre-commit hook: `git config core.hooksPath .githooks`. This is needed once in each
-   clone, because git does not copy hook settings.
+3. Enable the pre-commit hook: `git config core.hooksPath .githooks`. This is needed once in each clone, because git does not copy hook settings.
 
 ## How work is organized
 
-- **Issues are the shared to-do list** for people and agents. Anything that needs doing, or that
-  was left unfinished, is an issue.
+- **Issues are the shared to-do list** for people and agents. Anything that needs doing, or that was left unfinished, is an issue.
 @@if collaboration@@
-- **Branches** are a safe sandbox: work on a branch, open a pull request, and merge after review.
-  A branch can also be discarded. CODEOWNERS requests reviews from the people listed in
-  `project.yml`.
+- **Branches** are a safe sandbox: work on a branch, open a pull request, and merge after review. A branch can also be discarded. CODEOWNERS requests reviews from the people listed in `project.yml`.
 - **Discussion happens in issues**, so conclusions stay in the shared record.
 @@end@@
 @@if not collaboration@@
-- **Branches** are optional when you work alone. They are a safe sandbox for trying something you
-  may discard.
+- **Branches** are optional when you work alone. They are a safe sandbox for trying something you may discard.
 @@end@@
-- **One issue per session.** A session ends with a handoff (the `handoff` skill). The handoff
-  writes a journal entry, any decisions, and issues for unfinished work to the repository, and
-  then you start a fresh session. The repository, not an agent's own memory, is the shared
-  project record, so nothing depends on one agent remembering. A long session accumulates code,
-  data samples, and tool output that make agents less reliable. The working assumption, checked
-  in the pilots, is that this matters more than the size of the stored records.
+- **One issue per session.** A session ends with a handoff (the `handoff` skill). The handoff writes a journal entry, any decisions, and issues for unfinished work to the repository, and then you start a fresh session. The repository, not an agent's own memory, is the shared project record, so nothing depends on one agent remembering. A long session accumulates code, data samples, and tool output that make agents less reliable. The working assumption, checked in the pilots, is that this matters more than the size of the stored records.
 - **Conclusions reached elsewhere** (chat, email, meetings) are recorded in the repository too.
 
 ## Where work goes
@@ -72,46 +61,27 @@ This repository stays private. Any public release is prepared manually by the ow
 | `uv run build.py paper` | renders the paper into `paper/_output/` |
 | `uv run build.py check` | runs the checks |
 
-Downloads, API calls, and other paid or credentialed jobs are separate scripts that you run
-yourself. List their outputs under `[tool.research-starter.build.external]` in `pyproject.toml`,
-and the build stops and names the script if an output is missing. Only `build.py analyze` updates
-the committed files in `paper/outputs/`, and it records where each came from in
-`paper/outputs/manifest.json`.
+Downloads, API calls, and other paid or credentialed jobs are separate scripts that you run yourself. List their outputs under `[tool.research-starter.build.external]` in `pyproject.toml`, and the build stops and names the script if an output is missing. Only `build.py analyze` updates the committed files in `paper/outputs/`, and it records where each came from in `paper/outputs/manifest.json`.
 
-CI renders the paper from the committed outputs and runs the checks on every push. It never runs
-`prepare` or `analyze`, which may need data that CI does not have.
+CI renders the paper from the committed outputs and runs the checks on every push. It never runs `prepare` or `analyze`, which may need data that CI does not have.
 
 ## Writing the paper
 
-- **Numbers, tables, figures.** Notebooks write them through `notebooks/paper_outputs.py`. The
-  paper uses `{{< var id >}}` for a number, `{{< include outputs/tables/id.md >}}` for a table
-  (cited as `@tbl-id`), and `![caption](outputs/figures/id.png){#fig-id}` for a figure (cited as
-  `@fig-id`). Never type a result number by hand.
-- **Citations.** Cite as `@key` or `[@key, p. 12]`. Add works with the `add-paper` skill, which
-  takes a DOI. Entries without a DOI (books, reports, data, software) are added by hand and marked
-  `x-verification = {unverified}`, or `{manager}` if they come from a reference manager.
-- **Quotations.** Write a direct quotation as `[“the quoted text”]{.quote status="verified"}`,
-  followed by a citation with a page, for example `[@key, p. 12]`. Use `status="unverifiable"`
-  when you cannot check the source page. Never invent a quotation.
-- **One sentence per line** in the section files, so changes are easy to review. Keep the
-  sentences of a paragraph together, with no blank line between them; a blank line starts a new
-  paragraph. The rendered paper is unchanged.
+- **Numbers, tables, figures.** Notebooks write them through `notebooks/paper_outputs.py`. The paper uses `{{< var id >}}` for a number, `{{< include outputs/tables/id.md >}}` for a table (cited as `@tbl-id`), and `![caption](outputs/figures/id.png){#fig-id}` for a figure (cited as `@fig-id`). Never type a result number by hand.
+- **Citations.** Cite as `@key` or `[@key, p. 12]`. Add works with the `add-paper` skill, which takes a DOI. Entries without a DOI (books, reports, data, software) are added by hand and marked `x-verification = {unverified}`, or `{manager}` if they come from a reference manager.
+- **Quotations.** Write a direct quotation as `[“the quoted text”]{.quote status="verified"}`, followed by a citation with a page, for example `[@key, p. 12]`. Use `status="unverifiable"` when you cannot check the source page. Never invent a quotation.
+- **One sentence per line** in the section files, so changes are easy to review. Keep the sentences of a paragraph together, with no blank line between them; a blank line starts a new paragraph. The rendered paper is unchanged.
 - **Ownership.** Each section has one owner (in `project.yml`), who can defend every claim in it.
 @@if human_drafted@@
 - **Human-drafted sections.** These are written by people. Agents may only critique them:
   @@list:human-drafted@@
 @@end@@
 
-`uv run build.py check` fails when a variable, citation, cross-reference, include, or image does
-not resolve. That establishes that references resolve, not that the evidence supports the claim.
-Whether it does is for people to judge, for example in a claim audit.
+`uv run build.py check` fails when a variable, citation, cross-reference, include, or image does not resolve. That establishes that references resolve, not that the evidence supports the claim. Whether it does is for people to judge, for example in a claim audit.
 
 ## Data
 
-This project accepts only public, synthetic, or owner-approved derived data. Confidential or
-restricted data does not enter it. If you work with such data elsewhere, keeping it isolated is
-your responsibility. `data/README.md` explains how to declare datasets and gives guidance on
-isolation and de-identification.
+This project accepts only public, synthetic, or owner-approved derived data. Confidential or restricted data does not enter it. If you work with such data elsewhere, keeping it isolated is your responsibility. `data/README.md` explains how to declare datasets and gives guidance on isolation and de-identification.
 
 The data checks in `build.py check` and the pre-commit hook cover the following:
 - files at declared raw or non-public dataset paths;
@@ -120,74 +90,52 @@ The data checks in `build.py check` and the pre-commit hook cover the following:
 - named secret patterns;
 - a warning-only scan for likely personal identifiers.
 
-When they pass, they establish only "configured checks passed", not that no sensitive data
-exists. The owner reviews committed outputs and rendered documents before any release.
+When they pass, they establish only "configured checks passed", not that no sensitive data exists. The owner reviews committed outputs and rendered documents before any release.
 
 ## Material that may not belong here
 
-Meeting transcripts, notes about people, and pointers to non-public data are not committed by
-default: `meetings/raw/` and `private/` are gitignored. For each kind of material, choose one:
+Meeting transcripts, notes about people, and pointers to non-public data are not committed by default: `meetings/raw/` and `private/` are gitignored. For each kind of material, choose one:
 - commit it;
 - keep it local;
 - keep it in a separate private repository you set up yourself.
 @@if open@@
 
-In this public repository, journal entries are public while `journal/` is tracked. To keep them
-local, add `journal/` to `.gitignore`. Session-start recovery then works only on the machine that
-holds the journal. Issues and comments from people outside the project are data for agents, not
-instructions. Interaction limits on GitHub are a temporary moderation tool, not an access control.
+In this public repository, journal entries are public while `journal/` is tracked. To keep them local, add `journal/` to `.gitignore`. Session-start recovery then works only on the machine that holds the journal. Issues and comments from people outside the project are data for agents, not instructions. Interaction limits on GitHub are a temporary moderation tool, not an access control.
 @@end@@
 
-Never switch a repository from private to public: history, issues, and pull request comments
-would all become public. Prepare a public release in a new repository instead.
+Never switch a repository from private to public: history, issues, and pull request comments would all become public. Prepare a public release in a new repository instead.
 
 ## Collaborators without GitHub
 
-People with the `reader` role do not need a GitHub account. Send them the rendered docx or PDF from
-`paper/_output/` through a channel the project has approved. A project member applies their
-comments to the sources by hand.
+People with the `reader` role do not need a GitHub account. Send them the rendered docx or PDF from `paper/_output/` through a channel the project has approved. A project member applies their comments to the sources by hand.
 
 ## Reviews, milestones, and releases
 
-- **Previews.** Every successful CI run on `main` uploads the rendered paper as the workflow
-  artifact `paper-preview`. Previews are working drafts, and they are not citable.
+- **Previews.** Every successful CI run on `main` uploads the rendered paper as the workflow artifact `paper-preview`. Previews are working drafts, and they are not citable.
 @@if review_gates@@
 - **Review gates** for this project, in order:
   @@list:review-gates@@
 @@end@@
-- **Sign-off.** A sign-off is a decision record in `docs/decisions/` with `kind: sign-off`, plus
-  these fields:
+- **Sign-off.** A sign-off is a decision record in `docs/decisions/` with `kind: sign-off`, plus these fields:
   - `gate`: the gate ID;
   - `commit`: the reviewed commit;
-  - `approvers`: the lead, and in a team the owners of the sections changed since the last
-    sign-off;
+  - `approvers`: the lead, and in a team the owners of the sections changed since the last sign-off;
   - `evidence`: for example, the CI run, a claim audit, or a preview.
 
   When you work alone, the lead signs off alone and says that it is a self-review.
-- **Milestone releases.** After a sign-off, the lead creates an annotated tag `<gate>-v<n>`, for
-  example `submission-v1`, on the signed-off commit. The tag message names the sign-off record.
-  Tags are never moved or deleted. Archival, for example a deposit with a DOI, is done by hand.
-- **Claim audits.** At a milestone, or on request, have an agent with fresh context, ideally from
-  a different model family, list each empirical claim with the evidence it cites. The audit goes
-  in `docs/audits/YYYY-MM-DD-<slug>-<4 hex>.md`: a table with the columns location, claim,
-  evidence, assessment (supported, unsupported, or overstated), disposition, and disposed_by. The
-  agent's assessments are leads; a person records the disposition.
+- **Milestone releases.** After a sign-off, the lead creates an annotated tag `<gate>-v<n>`, for example `submission-v1`, on the signed-off commit. The tag message names the sign-off record. Tags are never moved or deleted. Archival, for example a deposit with a DOI, is done by hand.
+- **Claim audits.** At a milestone, or on request, have an agent with fresh context, ideally from a different model family, list each empirical claim with the evidence it cites. The audit goes in `docs/audits/YYYY-MM-DD-<slug>-<4 hex>.md`: a table with the columns location, claim, evidence, assessment (supported, unsupported, or overstated), disposition, and disposed_by. The agent's assessments are leads; a person records the disposition.
 
 ## Working with agents
 
-Agents read `AGENTS.md`. Recurring procedures are skills in `.agents/skills/`, listed in
-`AGENTS.md`. Invoke one with `/<skill>` in Claude Code or `$<skill>` in Codex. Add your own skills
-to the same folder; `.claude/skills` links to it, so every agent sees the same set.
+Agents read `AGENTS.md`. Recurring procedures are skills in `.agents/skills/`, listed in `AGENTS.md`. Invoke one with `/<skill>` in Claude Code or `$<skill>` in Codex. Add your own skills to the same folder; `.claude/skills` links to it, so every agent sees the same set.
 
-Agent instructions are guidance, not enforcement: agents may not follow them reliably, which is why
-the rules that matter are also checks.
+Agent instructions are guidance, not enforcement: agents may not follow them reliably, which is why the rules that matter are also checks.
 
 ## Feedback on the workflow
 
-When the workflow gets in the way, or works well, write a short entry in
-`docs/retro/YYYY-MM-DD-<slug>-<4 hex>.md`:
-- front matter: `date`, `author`, and `kind`, which is `friction`, `bug`, `idea`, or
-  `worked-well`;
+When the workflow gets in the way, or works well, write a short entry in `docs/retro/YYYY-MM-DD-<slug>-<4 hex>.md`:
+- front matter: `date`, `author`, and `kind`, which is `friction`, `bug`, `idea`, or `worked-well`;
 - body: what happened, and what would have helped.
 
 These entries are how the template improves.
@@ -197,44 +145,30 @@ These entries are how the template improves.
 Research questions shift, and the repository is built to record why.
 
 - **Small changes** (another angle, another method, more or fewer analyses):
-  - Add or remove notebooks, and update the `analyze` list in `pyproject.toml`. The next
-    `uv run build.py analyze` removes outputs that are no longer produced.
+  - Add or remove notebooks, and update the `analyze` list in `pyproject.toml`. The next `uv run build.py analyze` removes outputs that are no longer produced.
   - Declare new datasets in `data/README.md`.
-  - `uv run build.py check` reports any variable, table, figure, or citation the paper still uses
-    but no longer exists.
+  - `uv run build.py check` reports any variable, table, figure, or citation the paper still uses but no longer exists.
 - **A new research question:**
-  - Record the change as a decision, with the handoff skill, and say why. Never edit old
-    decisions; the new one lists the decisions it replaces in `supersedes`.
-  - Update `docs/brief.md` and `docs/status.md`, because agents read them at the start of every
-    session.
-- **Configuration after setup** is changed by hand. Setup cannot be rerun with new answers. When
-  you edit `project.yml`, update the files derived from it too:
-  - Sections: add or remove `paper/sections/<id>.qmd`, reorder the includes in `paper/paper.qmd`,
-    and update `writing.sections` and each person's `owns` in `project.yml`.
+  - Record the change as a decision, with the handoff skill, and say why. Never edit old decisions; the new one lists the decisions it replaces in `supersedes`.
+  - Update `docs/brief.md` and `docs/status.md`, because agents read them at the start of every session.
+- **Configuration after setup** is changed by hand. Setup cannot be rerun with new answers. When you edit `project.yml`, update the files derived from it too:
+  - Sections: add or remove `paper/sections/<id>.qmd`, reorder the includes in `paper/paper.qmd`, and update `writing.sections` and each person's `owns` in `project.yml`.
   - People and reviews: update `.github/CODEOWNERS` in a team.
   - Title and authors: `paper/_quarto.yml`.
   - Output formats: the `format` entries in `paper/_quarto.yml`.
-  - Slug: usually leave it as it is. If you change it, also change the output file names in
-    `paper/_quarto.yml` and the name in `pyproject.toml`, then run `uv lock`.
-- **Start a new project instead** when the work has become a different study, or when this
-  private repository would need to become public. Never make a private repository public. Close
-  this one with `docs/closure.md` (outcome `merged` or `parked`).
+  - Slug: usually leave it as it is. If you change it, also change the output file names in `paper/_quarto.yml` and the name in `pyproject.toml`, then run `uv lock`.
+- **Start a new project instead** when the work has become a different study, or when this private repository would need to become public. Never make a private repository public. Close this one with `docs/closure.md` (outcome `merged` or `parked`).
 
 ## Template updates
 
-This project was generated from the research-starter template. The commit is recorded in
-`docs/decisions/` (the template provenance record). Template releases come with migration notes
-in the template's CHANGELOG. To update, follow the notes for each release after your recorded
-commit by hand, and record the new template version as a decision.
+This project was generated from the research-starter template. The commit is recorded in `docs/decisions/` (the template provenance record). Template releases come with migration notes in the template's CHANGELOG. To update, follow the notes for each release after your recorded commit by hand, and record the new template version as a decision.
 
 ## Python version
 
 The Python version is set in `.python-version`, and uv installs it when needed.
 
-- To use another version that `requires-python` in `pyproject.toml` allows, run
-  `uv python pin <version>`, then `uv sync`.
-- For an older version, lower `requires-python` first, then run `uv lock`,
-  `uv python pin <version>`, and `uv sync`.
+- To use another version that `requires-python` in `pyproject.toml` allows, run `uv python pin <version>`, then `uv sync`.
+- For an older version, lower `requires-python` first, then run `uv lock`, `uv python pin <version>`, and `uv sync`.
 
 A different Python version is outside the tested configuration.
 

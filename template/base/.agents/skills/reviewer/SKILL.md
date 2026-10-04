@@ -12,5 +12,4 @@ description: Critique a file as the project's configured reviewer persona. Produ
    - its location as `file:line`;
    - what is wrong, and what evidence would resolve it.
 4. Do not edit the file and do not propose rewritten text. The owner decides what to change.
-5. Say which model you are. A review is most useful from a different model family than the one
-   that drafted the text; if you are the same family, say so.
+5. Say which model you are. A review is most useful from a different model family than the one that drafted the text; if you are the same family, say so.
