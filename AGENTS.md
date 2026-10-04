@@ -25,6 +25,7 @@ Everything written to this repository is in English: code, comments, docs, commi
 3. Keep v0 small. Build only what the PRD's v0 scope requires. When a template feature seems useful but is not required, propose adding it to the PRD's "Later" section instead of building it.
 4. Deterministic setup. Scaffold content comes from finished files in `template/`. The setup script copies and fills them. Do not generate scaffold content from descriptions.
 5. Python via uv only (`uv add`, `uv run`). No pip.
+6. Write Markdown prose one paragraph or list item per line and let the editor soft-wrap; never hard-wrap at a fixed column. Files under `template/` follow their own conventions, and existing decision files are not reflowed. A test enforces this.
 
 ## Issues
 
