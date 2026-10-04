@@ -535,6 +535,11 @@ upstream planning tool. Finding an outlet for a finished project is a possible l
 - R support as a per-project language choice (environment via rig and renv), using the same
   output contract. Mixing languages within one project stays out of scope.
 - Default reference manager for new projects, beyond the single committed bibliography file.
+  Any choice must settle which tool writes `paper/references.bib`. An export that replaces the
+  file drops entries the add-paper skill appended and the hand-set `x-verification = {manager}`
+  fields (A8.2). The two options are the manager as sole writer, with add-paper adding works to
+  the manager instead of the file, or the file as sole writer, with the manager kept for full
+  text and notes.
 - Availability of a second model family for the reviewer command.
 - Default license choices offered to generated projects.
 
