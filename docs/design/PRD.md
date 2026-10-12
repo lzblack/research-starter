@@ -138,7 +138,7 @@ Memory: see section 10.
 
 Language: generated projects have a repository language, English by default. Everything the agent writes to the repository (docs, journal, decisions, commit messages, issues) uses it, regardless of the language of the conversation.
 
-Accountability: each section of the paper has an owner who can defend every claim in it. AI assistance is disclosed through commit trailers and summarized in `docs/ai-use.md`.
+Accountability: each section of the paper has an owner who can defend every claim in it. AI assistance is disclosed through commit trailers and summarized in `docs/ai-use.md`. An agent that did not run a lookup or check says so and does not state its result from memory or by guessing.
 
 ## 9. Modules
 
