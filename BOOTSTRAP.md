@@ -38,14 +38,15 @@ Ask one question at a time, say what the default is, and explain a choice only w
 
 ## 3. Generate
 
-1. Show the plan and ask the user to confirm: `uv run new_project.py generate --answers <answers.yml> --target <dir> --dry-run`.
-2. Run the same command without `--dry-run`.
+1. For a clone, read the repository's visibility with `gh repo view <url> --json visibility -q .visibility`. An open project needs `PUBLIC` and a closed one `PRIVATE`; on any other result, stop and resolve it with the user (change the repository's visibility on GitHub, or the answer) before generating.
+2. Show the plan and ask the user to confirm: `uv run new_project.py generate --answers <answers.yml> --target <dir> --dry-run`.
+3. Run the same command without `--dry-run`.
    - On exit code 3, the answers are invalid: ask again about each reported field.
    - On exit code 4, files already exist and differ: report them; never delete the user's files.
    - Report any warnings.
-3. Run `uv run new_project.py accept --target <dir>` and report every result. `not-tested` results are expected for the agent and GitHub checks.
-4. In the target, make the initial commit, with the trailer `AI-Assisted: <tool> (<model>)`. The pre-commit hook runs the data-exposure checks.
-5. Tell the user plainly that the project exists only on this computer and cannot be seen on GitHub yet (for a clone: GitHub still shows only its initial commit). Ask whether to connect it to GitHub now.
+4. Run `uv run new_project.py accept --target <dir>` and report every result. `not-tested` results are expected for the agent and GitHub checks.
+5. In the target, make the initial commit, with the trailer `AI-Assisted: <tool> (<model>)`. The pre-commit hook runs the data-exposure checks.
+6. Tell the user plainly that the project exists only on this computer and cannot be seen on GitHub yet (for a clone: GitHub still shows only its initial commit). Ask whether to connect it to GitHub now.
 
 ## 4. GitHub (can be resumed later)
 
