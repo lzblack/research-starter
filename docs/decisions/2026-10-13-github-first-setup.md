@@ -7,6 +7,7 @@ Date: 2026-10-13
 - A new project may be generated into a clone of a GitHub repository the user just created. The clone may hold only GitHub's initial commit with README.md, LICENSE, or .gitignore. `generate` replaces README.md and .gitignore with the template's files, reports them with the new output verb `replace`, and keeps LICENSE. Any other existing history is still refused, since adoption of existing projects is deferred.
 - `provision` treats HTTPS and SSH URLs of the same GitHub repository as the same remote. When the remote has commits the project does not contain, the push step fails with a message naming the two ways to fix it; it never merges or force-pushes.
 - The bootstrap preflight also checks the operating system and the GitHub CLI login and scopes. A GitHub problem is reported and a fix offered, but it does not block local generation.
+- For a clone, the bootstrap agent compares the GitHub repository's visibility with the `visibility` answer before generating and stops on a mismatch, because in this order the repository's visibility is chosen first. The check is an instruction, not code.
 - After the initial commit, the bootstrap agent tells the user that the project exists only locally and asks whether to connect it to GitHub now.
 
 ## Reason
