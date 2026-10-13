@@ -38,7 +38,7 @@ Ask one question at a time, say what the default is, and explain a choice only w
 
 ## 3. Generate
 
-1. For a clone, read the repository's visibility with `gh repo view <url> --json visibility -q .visibility`, or, without gh, ask the user whether GitHub shows it as Public or Private. An open project needs `PUBLIC` and a closed one `PRIVATE`; on a mismatch, stop and resolve it with the user (change the repository's visibility on GitHub, or the answer) before generating.
+1. For a clone, read the repository's visibility with `gh repo view <url> --json visibility -q .visibility`, or, if gh is unavailable or the query fails, ask the user whether GitHub shows it as Public or Private. An open project needs `PUBLIC` and a closed one `PRIVATE`; on a mismatch, stop and resolve it with the user (change the repository's visibility on GitHub, or the answer) before generating.
 2. Show the plan and ask the user to confirm: `uv run new_project.py generate --answers <answers.yml> --target <dir> --dry-run`.
 3. Run the same command without `--dry-run`.
    - On exit code 3, the answers are invalid: ask again about each reported field.
