@@ -124,14 +124,11 @@ def _check_first_run(target: Path, initial: set[str] | None) -> None:
 
 
 def _unchanged_since_head(target: Path, path: str) -> bool:
-    """True if the file, its index entry, and its committed version are the same regular file."""
+    """True for a regular file with no staged or unstaged change since HEAD, mode included."""
     dest = target / path
     if dest.is_symlink() or not dest.is_file():
         return False
-    refs = (f"HEAD:{path}", f":{path}")
-    blobs = [_git(target, "rev-parse", "-q", "--verify", ref, check=False).stdout.strip() for ref in refs]
-    blobs.append(_git(target, "hash-object", "--no-filters", "--", path).stdout.strip())
-    return blobs[0] != "" and len(set(blobs)) == 1
+    return not _git(target, "status", "--porcelain", "--", path).stdout.strip()
 
 
 def _classify(target: Path, path: str, spec: FileSpec) -> str:

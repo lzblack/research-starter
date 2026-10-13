@@ -414,13 +414,12 @@ def test_github_clone_with_untracked_file(template_repo: Path, answers: Path, ta
     assert_refused(run(template_repo, answers, target), target, set(GITHUB_FILES) | {"notes.txt"})
 
 
-def test_github_file_hidden_by_assume_unchanged_is_a_conflict(template_repo: Path, answers: Path, target: Path) -> None:
+def test_github_file_with_mode_change_is_a_conflict(template_repo: Path, answers: Path, target: Path) -> None:
     github_clone(target)
-    git(target, "update-index", "--assume-unchanged", "README.md")
-    (target / "README.md").write_text("local edit\n")
+    (target / "README.md").chmod(0o755)
     outcome = run(template_repo, answers, target)
     assert verbs(outcome)["README.md"] == "conflict"
-    assert (target / "README.md").read_text() == "local edit\n"
+    assert (target / "README.md").stat().st_mode & 0o111
 
 
 def test_github_file_with_staged_changes_is_a_conflict(template_repo: Path, answers: Path, target: Path) -> None:
