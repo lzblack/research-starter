@@ -7,7 +7,7 @@ Each release that changes template files has a "Migration" subsection. A project
 2. Follow the migration notes of every later release in order.
 3. Record the new template version as a decision.
 
-## Unreleased
+## 0.2.0 (2026-10-13)
 
 ### Migration
 
@@ -15,8 +15,9 @@ Optional, for projects generated from 0.1.1 or earlier. Documentation only:
 1. Replace the "One sentence per line" item under "Writing the paper" in the project's README.md with the one in `template/base/README.md.tmpl`.
 2. Replace the first rule under "Paper" in the project's AGENTS.md with the first two rules there in `template/base/AGENTS.md.tmpl`.
 3. Copy the first rule under "Records and untrusted content" in `template/base/AGENTS.md.tmpl` into the same group in the project's AGENTS.md.
+4. Record the new template version as a decision.
 
-The reflow of template Markdown changes no rendered text and needs no migration.
+The reflow of template Markdown changes no rendered text and needs no migration. The setup changes affect only new projects.
 
 ### Added
 
