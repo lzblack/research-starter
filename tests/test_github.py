@@ -120,6 +120,26 @@ def test_remote_with_other_commits_is_not_overwritten(project, tmp_path: Path) -
     assert git(Path(remote), "log", "--format=%s", "main") == "Initial commit"
 
 
+def test_project_generated_into_a_clone_is_pushed(tmp_path: Path) -> None:
+    seed = tmp_path / "seed"
+    git(tmp_path, "init", "-q", "-b", "main", str(seed))
+    (seed / "README.md").write_text("# demo\n")
+    git(seed, "add", "-A")
+    git(seed, "commit", "-q", "-m", "Initial commit")
+    remote = tmp_path / "remote.git"
+    git(tmp_path, "clone", "-q", "--bare", str(seed), str(remote))
+    target = tmp_path / "project"
+    git(tmp_path, "clone", "-q", str(remote), str(target))
+    (target / "README.md").write_text("# project\n")
+    git(target, "commit", "-q", "-am", "initial project")
+    gh = FakeGh()
+    report = provision(target, str(remote), [], accept_local=lambda t: True, gh=gh)
+    assert [line.split(" (")[0] for line in report.lines[:3]] == ["done confirm", "skip remote", "done push"]
+    assert git(remote, "rev-parse", "main") == git(target, "rev-parse", "HEAD")
+    again = provision(target, str(remote), [], accept_local=lambda t: True, gh=gh)
+    assert again.code == 0 and "skip push" in again.lines
+
+
 def test_refuses_without_commit(tmp_path: Path) -> None:
     target = tmp_path / "empty"
     target.mkdir()

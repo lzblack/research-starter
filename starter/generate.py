@@ -87,10 +87,12 @@ def _recorded(target: Path, normalized: dict[str, Any]) -> dict[str, str] | None
 
 
 def _github_initial(target: Path) -> set[str] | None:
-    """The files of the target's only commit if it holds nothing but GITHUB_INITIAL files (A1.5)."""
+    """The files of the repository's only commit if it holds nothing but GITHUB_INITIAL files (A1.5)."""
     if not (target / ".git").exists():
         return None
-    commits = _git(target, "rev-list", "--max-count=2", "HEAD", check=False)
+    if _git(target, "rev-parse", "--is-shallow-repository", check=False).stdout.strip() != "false":
+        return None
+    commits = _git(target, "rev-list", "--max-count=2", "--all", check=False)
     if commits.returncode != 0 or len(commits.stdout.split()) != 1:
         return None
     files = set(_git(target, "ls-tree", "-r", "-z", "--name-only", "HEAD").stdout.split("\0")) - {""}
@@ -122,7 +124,14 @@ def _check_first_run(target: Path, initial: set[str] | None) -> None:
 
 
 def _unchanged_since_head(target: Path, path: str) -> bool:
-    return _git(target, "diff", "--quiet", "HEAD", "--", path, check=False).returncode == 0
+    """True if the file, its index entry, and its committed version are the same regular file."""
+    dest = target / path
+    if dest.is_symlink() or not dest.is_file():
+        return False
+    refs = (f"HEAD:{path}", f":{path}")
+    blobs = [_git(target, "rev-parse", "-q", "--verify", ref, check=False).stdout.strip() for ref in refs]
+    blobs.append(_git(target, "hash-object", "--no-filters", "--", path).stdout.strip())
+    return blobs[0] != "" and len(set(blobs)) == 1
 
 
 def _classify(target: Path, path: str, spec: FileSpec) -> str:
@@ -186,8 +195,8 @@ def _setup_git(target: Path, paths: list[str]) -> None:
     if current != ".githooks":
         _git(target, "config", "core.hooksPath", ".githooks")
     if paths:
-        # A user's global excludes (for example `.claude/`) must not drop generated files.
-        _git(target, "-c", "core.excludesFile=/dev/null", "add", "--", *paths)
+        # Ignore rules (a user's global excludes, or a kept .gitignore) must not drop generated files.
+        _git(target, "add", "-f", "--", *paths)
 
 
 def generate(

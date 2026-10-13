@@ -342,10 +342,15 @@ def github_clone(target: Path, files: dict[str, str] = GITHUB_FILES) -> None:
 
 
 def test_github_initial_commit_is_completed(template_repo: Path, answers: Path, target: Path) -> None:
+    write(template_repo / "template" / "base" / ".gitignore", "*.pyc\n")
+    git(template_repo, "add", "-A")
+    git(template_repo, "commit", "-q", "-m", "ignore rules")
     github_clone(target)
     outcome = run(template_repo, answers, target)
     assert outcome.code == 0, outcome.errors
     assert verbs(outcome)["README.md"] == "replace"
+    assert verbs(outcome)[".gitignore"] == "replace"
+    assert (target / ".gitignore").read_text() == "*.pyc\n"
     assert (target / "README.md").read_text().startswith("# Synthetic Project\n")
     assert (target / "LICENSE").read_text() == GITHUB_FILES["LICENSE"]
     assert git(target, "rev-list", "--count", "HEAD") == "1"
@@ -407,3 +412,61 @@ def test_github_clone_with_untracked_file(template_repo: Path, answers: Path, ta
     github_clone(target)
     (target / "notes.txt").write_text("existing work\n")
     assert_refused(run(template_repo, answers, target), target, set(GITHUB_FILES) | {"notes.txt"})
+
+
+def test_github_file_hidden_by_assume_unchanged_is_a_conflict(template_repo: Path, answers: Path, target: Path) -> None:
+    github_clone(target)
+    git(target, "update-index", "--assume-unchanged", "README.md")
+    (target / "README.md").write_text("local edit\n")
+    outcome = run(template_repo, answers, target)
+    assert verbs(outcome)["README.md"] == "conflict"
+    assert (target / "README.md").read_text() == "local edit\n"
+
+
+def test_github_file_with_staged_changes_is_a_conflict(template_repo: Path, answers: Path, target: Path) -> None:
+    github_clone(target)
+    (target / "README.md").write_text("staged edit\n")
+    git(target, "add", "README.md")
+    (target / "README.md").write_text(GITHUB_FILES["README.md"])
+    outcome = run(template_repo, answers, target)
+    assert verbs(outcome)["README.md"] == "conflict"
+    assert git(target, "show", ":README.md") == "staged edit"
+
+
+def test_github_symlink_is_a_conflict(template_repo: Path, answers: Path, target: Path) -> None:
+    github_clone(target, {"LICENSE": GITHUB_FILES["LICENSE"]})
+    os.symlink("LICENSE", target / "README.md")
+    git(target, "add", "README.md")
+    git(target, "commit", "-q", "--amend", "-m", "Initial commit")
+    outcome = run(template_repo, answers, target)
+    assert verbs(outcome)["README.md"] == "conflict"
+    assert (target / "README.md").is_symlink()
+
+
+def test_generated_files_are_staged_despite_local_ignore_rules(
+    template_repo: Path, answers: Path, target: Path
+) -> None:
+    github_clone(target)
+    (target / ".gitignore").write_text("project.yml\n")
+    outcome = run(template_repo, answers, target)
+    assert outcome.code == 0, outcome.errors
+    assert "project.yml" in git(target, "ls-files").splitlines()
+    assert (target / ".gitignore").read_text() == "project.yml\n"
+
+
+def test_shallow_clone_is_refused(template_repo: Path, answers: Path, target: Path, tmp_path: Path) -> None:
+    source = tmp_path / "older"
+    github_clone(source.mkdir() or source, {"README.md": "first\n"})
+    (source / "README.md").write_text("second\n")
+    git(source, "commit", "-q", "-am", "second")
+    git(tmp_path, "clone", "-q", "--depth", "1", source.as_uri(), str(target))
+    assert_refused(run(template_repo, answers, target), target, {"README.md"})
+
+
+def test_work_on_another_branch_is_refused(template_repo: Path, answers: Path, target: Path) -> None:
+    github_clone(target)
+    git(target, "checkout", "-q", "-b", "work")
+    (target / "LICENSE").write_text("changed\n")
+    git(target, "commit", "-q", "-am", "work")
+    git(target, "checkout", "-q", "main")
+    assert_refused(run(template_repo, answers, target), target, set(GITHUB_FILES))
