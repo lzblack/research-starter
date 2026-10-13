@@ -53,7 +53,7 @@ Errors and warnings go to standard error as `error: <location>: <message>` or `w
 | 1 | unexpected internal error | possibly some; a rerun completes the project (A3.2) |
 | 2 | usage error (unknown command or option) | none |
 | 3 | answers file invalid | none |
-| 4 | `generate`: conflicts found; `accept`: at least one check failed; `provision`: a step failed | `generate`: missing files created, conflicting files untouched |
+| 4 | `generate`: conflicts found; `accept`: at least one check failed; `provision`: a step failed | `generate`: missing and `replace` files written, conflicting files untouched |
 | 5 | precondition failed (A1.5) | none |
 
 ### A1.3 Answers file

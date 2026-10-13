@@ -8,7 +8,7 @@ Work in the user's conversation language, but write the answers file and everyth
 
 Report every finding here, before asking any setup question.
 
-1. Check the operating system with `uname -s`. `Darwin` (macOS) and `Linux` are supported. On Windows, stop and tell the user that v0 does not support Windows.
+1. Check the operating system with `uname -s`. `Darwin` (macOS) and `Linux` are supported. On anything else, including Windows (where `uname` may be missing or print `MINGW` or `CYGWIN`), stop and tell the user that v0 supports only macOS and Linux.
 2. Check `git --version` and `uv --version` (0.12.18 or later). If uv is missing, offer the official installer (<https://docs.astral.sh/uv/getting-started/installation/>) and install it only with the user's consent.
 3. Check `gh --version` and `gh auth status`. Connecting the project to GitHub (section 4) needs the GitHub CLI logged in with the `repo` and `workflow` scopes. If gh is missing, not logged in, or its listed scopes lack either one, tell the user now and offer the fix (`gh auth login`, or `gh auth refresh -s repo,workflow`). If no scopes are listed, as with a fine-grained token, say that they can be confirmed only during provisioning. Local generation does not need gh and continues either way.
 4. In this checkout, run `uv sync --locked`.
