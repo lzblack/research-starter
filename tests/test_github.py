@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from starter.github import MARKER, github_checks, issue_key, provision
+from starter.github import MARKER, github_checks, issue_key, provision, same_repository
 from tests.conftest import git
 
 
@@ -92,6 +92,32 @@ def test_different_origin_is_not_overwritten(project, tmp_path: Path) -> None:
     report = provision(target, remote, [], accept_local=lambda t: True, gh=FakeGh())
     assert report.code == 4 and report.lines[-1].startswith("fail remote")
     assert git(target, "remote", "get-url", "origin") == str(tmp_path / "elsewhere.git")
+
+
+@pytest.mark.parametrize("origin", [
+    "git@github.com:Example/demo.git", "https://github.com/example/demo.git", "ssh://git@github.com/example/demo",
+])  # fmt: skip
+def test_same_github_repository_in_another_url_form(origin: str) -> None:
+    assert same_repository(origin, "https://github.com/example/demo")
+
+
+def test_different_repositories() -> None:
+    assert not same_repository("git@github.com:example/demo.git", "https://github.com/example/other")
+    assert not same_repository("/srv/a.git", "/srv/b.git")
+
+
+def test_remote_with_other_commits_is_not_overwritten(project, tmp_path: Path) -> None:
+    target, remote = project
+    other = tmp_path / "github-init"
+    git(tmp_path, "init", "-q", "-b", "main", str(other))
+    (other / "README.md").write_text("# demo\n")
+    git(other, "add", "-A")
+    git(other, "commit", "-q", "-m", "Initial commit")
+    git(other, "push", "-q", remote, "main")
+    report = provision(target, remote, [], accept_local=lambda t: True, gh=FakeGh())
+    assert report.code == 4
+    assert report.lines[-1].startswith("fail push (the GitHub repository already has commits")
+    assert git(Path(remote), "log", "--format=%s", "main") == "Initial commit"
 
 
 def test_refuses_without_commit(tmp_path: Path) -> None:

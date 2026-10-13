@@ -34,7 +34,7 @@ Options:
 - `--dry-run`: print the plan (A1.2) and exit with the code a real run would return, writing nothing. The agent shows this plan before writing (PRD section 4, step 4).
 - `--allow-dirty`: permit a template checkout with uncommitted changes. The recorded template version then carries a `-dirty` suffix. Without this option a dirty checkout is a precondition failure. Intended for template development only.
 - `--github` (for `accept`): also run the GitHub integration checks. Without it, those checks report not-tested.
-- `--remote URL` (for `provision`): the URL of the empty GitHub repository the user created.
+- `--remote URL` (for `provision`): the URL of the GitHub repository the user created, either empty or the repository the target was cloned from (A1.5).
 - `--first-task TEXT` (for `provision`, repeatable): the title of a project-specific first issue the user names (PRD section 4, step 8).
 
 ### A1.2 Output and exit codes
@@ -172,8 +172,8 @@ A GitHub initial commit is what a clone of a repository that GitHub created with
 `provision` performs these steps in order. Each step checks whether it is already done and skips it if so, so an interrupted run is resumed by running it again.
 
 1. Confirm that the target has at least one commit and that its local acceptance checks pass.
-2. Add the remote as `origin`. An existing `origin` with the same URL is a skip; a different URL is a failure that is reported, never overwritten.
-3. Push `main`. Never force-push.
+2. Add the remote as `origin`. An existing `origin` that names the same repository is a skip; GitHub URLs in HTTPS and SSH form name the same repository when owner and name match, ignoring case. A different repository is a failure that is reported, never overwritten.
+3. Push `main`. Never force-push. If the remote `main` has commits that the project does not contain, for example the initial files GitHub adds to a repository the project was not cloned from, the step fails and names the two ways out: generate into a clone of that repository, or use an empty repository.
 4. Create the initial issues: complete setup, plus one per `--first-task`. Each issue body carries a hidden marker `<!-- research-starter:setup-issue:<key> -->`, where the key is `setup` or the first 12 hexadecimal digits of the SHA-256 of the task title. An existing issue with the same marker, open or closed, means that issue is skipped.
 5. Run the GitHub integration checks (`accept --github`).
 

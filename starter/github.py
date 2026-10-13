@@ -6,6 +6,7 @@ by running it again. The GitHub CLI is called through `run_gh`, which tests repl
 
 import hashlib
 import json
+import re
 import subprocess
 import time
 from collections.abc import Callable
@@ -26,6 +27,13 @@ SETUP_BODY = """Finish setting up this project:
 - [ ] Replace the synthetic example with the first real analysis, or keep it until then.
 - [ ] Enable the pre-commit hook in each clone: `git config core.hooksPath .githooks`.
 """
+
+GITHUB_URL = re.compile(r"(?:https://github\.com/|git@github\.com:|ssh://git@github\.com/)([^/]+/[^/]+?)(?:\.git)?/?")
+OTHER_COMMITS = (
+    "the GitHub repository already has commits that this project does not contain, such as the README, "
+    "LICENSE, or .gitignore GitHub adds when creating a repository; clone the repository and generate "
+    "into the clone, or create an empty repository"
+)
 
 GhRunner = Callable[[list[str]], subprocess.CompletedProcess[str]]
 
@@ -48,6 +56,14 @@ class Report:
         self.lines.append(f"{verb} {name}" + (f" ({detail})" if detail else ""))
         if verb == "fail":
             self.code = 4
+
+
+def same_repository(a: str, b: str) -> bool:
+    """True for the same URL, or for two forms (HTTPS, SSH) of the same GitHub repository."""
+    if a == b:
+        return True
+    match_a, match_b = GITHUB_URL.fullmatch(a), GITHUB_URL.fullmatch(b)
+    return bool(match_a and match_b and match_a[1].lower() == match_b[1].lower())
 
 
 def issue_key(title: str) -> str:
@@ -87,7 +103,7 @@ def provision(
             report.step("fail", "remote", f"could not add {remote}")
             return report
         report.step("done", "remote")
-    elif current.stdout.strip() == remote:
+    elif same_repository(current.stdout.strip(), remote):
         report.step("skip", "remote")
     else:
         report.step("fail", "remote", f"origin already points to {current.stdout.strip()}; not changed")
@@ -97,6 +113,9 @@ def provision(
     remote_head = _git(target, "ls-remote", "origin", "refs/heads/main").stdout.split()
     if remote_head and remote_head[0] == head:
         report.step("skip", "push")
+    elif remote_head and _git(target, "merge-base", "--is-ancestor", remote_head[0], "HEAD").returncode != 0:
+        report.step("fail", "push", OTHER_COMMITS)
+        return report
     else:
         pushed = _git(target, "push", "-u", "origin", "main")
         if pushed.returncode != 0:
