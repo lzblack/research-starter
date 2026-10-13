@@ -16,7 +16,7 @@ Report every finding here, before asking any setup question.
 
 ## 2. Ask the setup questions
 
-Ask one question at a time, say what the default is, and explain a choice only when the user asks. Record the answers as YAML (schema 1, appendix A1.3) in a file outside the target:
+Ask one question at a time, say what the default is, and explain a choice only when the user asks. Record the answers as YAML in a file outside the target, in the format of appendix A1.3 (`docs/design/PRD-appendix.md`); the files in `tests/fixtures/answers/` are examples, and fields left at their default can be omitted:
 
 | Field | Ask | Default |
 |---|---|---|
@@ -51,5 +51,5 @@ Ask one question at a time, say what the default is, and explain a choice only w
 ## 4. GitHub (can be resumed later)
 
 1. If the target is not a clone, the user creates an empty GitHub repository, private for a closed project and public for an open one, with no README, license, or .gitignore: `provision` cannot push to a repository that has commits the project does not contain. If preflight found a problem with gh, the user fixes it now.
-2. Run `uv run new_project.py provision --target <dir> --remote <url> [--first-task "<title>"]...` and report each step; for a clone, `<url>` is the repository it was cloned from. It is safe to rerun after an interruption.
+2. Ask whether the user wants any first tasks as issues, then run `uv run new_project.py provision --target <dir> --remote <url> [--first-task "<title>"]...` and report each step; for a clone, `<url>` is the repository it was cloned from. It waits for the first CI run, up to 30 minutes, and prints its results only at the end, so allow a long timeout. It is safe to rerun after an interruption.
 3. Tell the user what to do next: open a new session in the project, where the agent follows the project's AGENTS.md.
