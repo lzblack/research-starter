@@ -18,9 +18,9 @@ A new project gets, from one answers file:
 
 ## Quick start
 
-Requirements: git and [uv](https://docs.astral.sh/uv/) on macOS or Linux. uv installs Python, Quarto, and everything else.
+Requirements: git and [uv](https://docs.astral.sh/uv/) on macOS or Linux, and the [GitHub CLI](https://cli.github.com/) to connect the project to GitHub. uv installs Python, Quarto, and everything else.
 
-1. Create an empty directory for your project.
+1. Create an empty directory for your project, or create the repository on GitHub and clone it. GitHub's options to add a README, license, or .gitignore are fine for a clone.
 2. Ask your coding agent to clone this repository to a temporary folder and follow [BOOTSTRAP.md](BOOTSTRAP.md). It asks the setup questions, shows the plan, creates the project, runs the acceptance checks, and can connect it to GitHub.
 
 Or run the setup script yourself from a clone of this repository:

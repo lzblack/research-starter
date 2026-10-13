@@ -54,16 +54,16 @@ Setup runs in two phases. Local generation needs no GitHub access and completes 
 
 Local generation:
 
-1. User creates an empty local directory for the project.
+1. User creates an empty local directory for the project, or creates a GitHub repository and clones it. The clone may hold only the files GitHub adds on creation (README, license, .gitignore).
 2. User asks their agent to clone this template to a temporary folder and follow `BOOTSTRAP.md`.
-3. Agent runs a preflight check. Required locally: git and uv (uv installs Python). If uv is missing, the agent offers the official installer. Quarto is installed through uv if a reliable packaged distribution is confirmed; otherwise it is a separate prerequisite.
+3. Agent runs a preflight check. Required locally: git and uv (uv installs Python). If uv is missing, the agent offers the official installer. Quarto is installed through uv if a reliable packaged distribution is confirmed; otherwise it is a separate prerequisite. The check also confirms a supported operating system and reports whether the GitHub CLI is installed and authenticated for provisioning, so problems appear before any work; a GitHub problem does not block local generation.
 4. Agent asks the setup questions (section 5), one at a time, and shows the full plan before writing.
 5. Agent copies template files, fills placeholders, removes disabled module content, and records the template commit hash as the first decision in `docs/decisions/`.
-6. Agent runs the local acceptance checks (section 16), reports each result, and makes the initial commit.
+6. Agent runs the local acceptance checks (section 16), reports each result, and makes the initial commit. Agent then tells the user that the project exists only locally and is not yet visible on GitHub, and asks whether to connect it now.
 
 GitHub provisioning:
 
-7. User creates an empty GitHub repository (private or public) and authenticates; the agent adds it as the remote and pushes.
+7. Unless the project is a clone of its GitHub repository, user creates an empty GitHub repository (private or public). User authenticates; the agent adds the repository as the remote and pushes.
 8. Agent creates the initial issues: complete setup, and any project-specific first tasks the user names.
 9. Agent runs the GitHub integration checks (section 16) and reports each result.
 

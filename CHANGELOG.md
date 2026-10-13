@@ -20,10 +20,13 @@ The reflow of template Markdown changes no rendered text and needs no migration.
 
 ### Added
 
+- Setup accepts a clone of a newly created GitHub repository as the target, including GitHub's initial README, LICENSE, and .gitignore. `generate` reports the README and .gitignore it overwrites as `replace` and keeps LICENSE.
+- The bootstrap preflight checks the operating system and the GitHub CLI login, and the bootstrap agent says when the project exists only locally.
 - Generated projects have an agent rule against reporting unchecked lookups: an agent that did not look something up or run a check says so, and never states the result from memory or by guessing.
 
 ### Changed
 
+- `provision` treats HTTPS and SSH URLs of the same GitHub repository as the same remote, and explains a push rejected because the remote has commits the project lacks.
 - Generated projects state the one-sentence-per-line rule for section files precisely: sentences of one paragraph stay together without blank lines, and the rendered paper is unchanged.
 - Template Markdown files are written one paragraph or list item per line instead of being wrapped at a fixed column. Rendered text is unchanged.
 

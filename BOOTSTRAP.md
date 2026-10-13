@@ -6,9 +6,13 @@ Work in the user's conversation language, but write the answers file and everyth
 
 ## 1. Preflight
 
-1. Check `git --version` and `uv --version` (0.12.18 or later). If uv is missing, offer the official installer (<https://docs.astral.sh/uv/getting-started/installation/>) and install it only with the user's consent.
-2. In this checkout, run `uv sync --locked`.
-3. The user creates an empty directory for the project (the target). Keep this checkout until GitHub provisioning is complete; `accept` and `provision` need the same template commit.
+Report every finding here, before asking any setup question.
+
+1. Check the operating system with `uname -s`. `Darwin` (macOS) and `Linux` are supported. On Windows, stop and tell the user that v0 does not support Windows.
+2. Check `git --version` and `uv --version` (0.12.18 or later). If uv is missing, offer the official installer (<https://docs.astral.sh/uv/getting-started/installation/>) and install it only with the user's consent.
+3. Check `gh --version` and `gh auth status`. Connecting the project to GitHub (section 4) needs the GitHub CLI logged in with the `repo` and `workflow` scopes. If gh is missing, not logged in, or its listed scopes lack either one, tell the user now and offer the fix (`gh auth login`, or `gh auth refresh -s repo,workflow`). If no scopes are listed, as with a fine-grained token, say that they can be confirmed only during provisioning. Local generation does not need gh and continues either way.
+4. In this checkout, run `uv sync --locked`.
+5. The user provides the project directory (the target): either an empty directory, or a clone of a GitHub repository they just created, private for a closed project and public for an open one. The clone may contain the README, LICENSE, and .gitignore that GitHub adds when creating a repository; `generate` replaces README.md and .gitignore with the project's own and keeps LICENSE. Keep this checkout until GitHub provisioning is complete; `accept` and `provision` need the same template commit.
 
 ## 2. Ask the setup questions
 
@@ -41,9 +45,10 @@ Ask one question at a time, say what the default is, and explain a choice only w
    - Report any warnings.
 3. Run `uv run new_project.py accept --target <dir>` and report every result. `not-tested` results are expected for the agent and GitHub checks.
 4. In the target, make the initial commit, with the trailer `AI-Assisted: <tool> (<model>)`. The pre-commit hook runs the data-exposure checks.
+5. Tell the user plainly that the project exists only on this computer and cannot be seen on GitHub yet (for a clone: GitHub still shows only its initial commit). Ask whether to connect it to GitHub now.
 
 ## 4. GitHub (can be resumed later)
 
-1. The user creates an empty GitHub repository, private for a closed project and public for an open one, and authenticates the GitHub CLI with the `repo` and `workflow` scopes (`gh auth login`).
-2. Run `uv run new_project.py provision --target <dir> --remote <url> [--first-task "<title>"]...` and report each step. It is safe to rerun after an interruption.
+1. If the target is not a clone, the user creates an empty GitHub repository, private for a closed project and public for an open one, with no README, license, or .gitignore: `provision` cannot push to a repository that has commits the project does not contain. If preflight found a problem with gh, the user fixes it now.
+2. Run `uv run new_project.py provision --target <dir> --remote <url> [--first-task "<title>"]...` and report each step; for a clone, `<url>` is the repository it was cloned from. It is safe to rerun after an interruption.
 3. Tell the user what to do next: open a new session in the project, where the agent follows the project's AGENTS.md.
