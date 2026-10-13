@@ -15,6 +15,7 @@ from starter.render import TemplateError
 
 TEMP_PREFIX = ".rs-tmp-"
 TOLERATED = {".git", ".DS_Store"}
+GITHUB_INITIAL = {"README.md", "LICENSE", ".gitignore"}
 TEMPLATE_PATHS = ["template", "starter", "new_project.py"]
 
 
@@ -85,11 +86,32 @@ def _recorded(target: Path, normalized: dict[str, Any]) -> dict[str, str] | None
     return generated
 
 
-def _check_first_run(target: Path) -> None:
+def _github_initial(target: Path) -> set[str] | None:
+    """The files of the target's only commit if it holds nothing but GITHUB_INITIAL files (A1.5)."""
+    if not (target / ".git").exists():
+        return None
+    commits = _git(target, "rev-list", "--max-count=2", "HEAD", check=False)
+    if commits.returncode != 0 or len(commits.stdout.split()) != 1:
+        return None
+    files = set(_git(target, "ls-tree", "-r", "-z", "--name-only", "HEAD").stdout.split("\0")) - {""}
+    return files if files <= GITHUB_INITIAL else None
+
+
+def _check_first_run(target: Path, initial: set[str] | None) -> None:
+    has_commits = (target / ".git").exists() and (
+        _git(target, "rev-parse", "--verify", "-q", "HEAD", check=False).returncode == 0
+    )
+    if has_commits and initial is None:
+        raise Refused(
+            5,
+            [("-", "the target's git repository already has commits; only the initial commit GitHub "
+                   f"makes when creating a repository ({', '.join(sorted(GITHUB_INITIAL))}) is accepted")],
+        )  # fmt: skip
+    allowed = TOLERATED | (initial or set())
     extra = sorted(
         entry.name
         for entry in target.iterdir()
-        if entry.name not in TOLERATED and not entry.name.startswith(TEMP_PREFIX)
+        if entry.name not in allowed and not entry.name.startswith(TEMP_PREFIX)
     )
     if extra:
         raise Refused(
@@ -97,8 +119,10 @@ def _check_first_run(target: Path) -> None:
             [("-", f"the target is not empty ({', '.join(extra[:5])}); adoption of an existing "
                    "project is not supported")],
         )  # fmt: skip
-    if (target / ".git").exists() and _git(target, "rev-parse", "--verify", "-q", "HEAD", check=False).returncode == 0:
-        raise Refused(5, [("-", "the target's git repository already has commits")])
+
+
+def _unchanged_since_head(target: Path, path: str) -> bool:
+    return _git(target, "diff", "--quiet", "HEAD", "--", path, check=False).returncode == 0
 
 
 def _classify(target: Path, path: str, spec: FileSpec) -> str:
@@ -203,9 +227,10 @@ def _generate(
     if store.startswith("~/") and _is_inside(Path(store).expanduser().resolve(), target):
         raise Refused(3, [("data.large_store", "must not be inside the project directory")])
 
+    initial = _github_initial(target)
     recorded = _recorded(target, answers.normalized)
     if recorded is None:
-        _check_first_run(target)
+        _check_first_run(target, initial)
         generated = {"date": date or datetime.date.today().isoformat(), "template_commit": commit}
     else:
         if recorded["template_commit"] != commit:
@@ -225,6 +250,10 @@ def _generate(
         raise Refused(1, [("template", str(exc))]) from exc
 
     status = {path: _classify(target, path, spec) for path, spec in plan.files.items()}
+    # GitHub's initial files are replaced: their content stays in the repository's history.
+    for path in initial or set():
+        if status.get(path) == "conflict" and _unchanged_since_head(target, path):
+            status[path] = "replace"
     outcome = Outcome(
         code=4 if "conflict" in status.values() else 0,
         lines=[f"{verb} {path}" for path, verb in status.items()],
@@ -236,7 +265,7 @@ def _generate(
     _remove_leftovers(target)
     order = sorted(plan.files, key=lambda p: p != "project.yml")
     for path in order:
-        if status[path] == "create":
+        if status[path] in ("create", "replace"):
             _write_atomic(target / path, plan.files[path])
     _setup_git(target, [p for p, verb in status.items() if verb != "conflict"])
     return outcome

@@ -41,7 +41,7 @@ Options:
 
 Every command writes one line per planned or performed action to standard output, prefixed by a fixed verb, followed by a repository-relative path or a check identifier:
 
-- `generate`: `create <path>`, `same <path>` (exists with identical bytes), `conflict <path>` (exists with different bytes, or is a directory or symbolic link; left unchanged).
+- `generate`: `create <path>`, `same <path>` (exists with identical bytes), `replace <path>` (a file of GitHub's initial commit, unchanged since that commit, overwritten because its content stays in the history; see A1.5), `conflict <path>` (exists with different bytes, or is a directory or symbolic link; left unchanged).
 - `accept`: `pass <check-id>`, `fail <check-id>`, `not-tested <check-id>`, each followed by a short reason for fail and not-tested.
 - `provision`: `done <step>`, `skip <step>` (already done), `fail <step>`.
 
@@ -155,11 +155,13 @@ Path patterns (`owns`, `reviews`, dataset `paths`):
 - git or uv is missing from `PATH`;
 - the files setup reads (`template/`, `starter/`, `new_project.py`) have uncommitted changes and `--allow-dirty` is not given;
 - the target does not exist, or lies inside the template checkout;
-- the target has no `project.yml` and contains entries other than `.git/`, `.DS_Store`, and leftover temporary files of an interrupted run, since adding the template to an existing project is adoption mode (deferred, PRD section 19a);
-- the target's git repository already has commits and no `project.yml`;
+- the target has no `project.yml` and contains entries other than `.git/`, `.DS_Store`, leftover temporary files of an interrupted run, and the files of a GitHub initial commit (below), since adding the template to an existing project is adoption mode (deferred, PRD section 19a);
+- the target's git repository already has commits other than a GitHub initial commit, and no `project.yml`;
 - the target has a `project.yml` whose answers differ from the normalized answers, or whose `generated` values differ from this run's template commit or explicit `--date` (A3.2).
 
-`generate` writes `project.yml` first. If the target has no git repository, `generate` initializes one with the unborn default branch `main`; an existing repository without commits is switched to `main`. It sets `core.hooksPath` to `.githooks` (A7.1). It adds every path it reports as `create` or `same` to the index. It does not commit; the agent makes the initial commit after the local acceptance checks pass (PRD section 4, step 6).
+A GitHub initial commit is what a clone of a repository that GitHub created with its initialization options contains: the repository's only commit, holding nothing but files named `README.md`, `LICENSE`, or `.gitignore`. Such a clone is accepted as a target, so a user may create the GitHub repository first and generate into its clone. Template files at those paths are reported as `replace` while the file is unchanged since that commit, including on a rerun after an interruption; `LICENSE` is not a template file and is kept. Once the project's initial commit exists, these paths follow the normal rules.
+
+`generate` writes `project.yml` first. If the target has no git repository, `generate` initializes one with the unborn default branch `main`; an existing repository without commits is switched to `main`. It sets `core.hooksPath` to `.githooks` (A7.1). It adds every path it reports as `create`, `same`, or `replace` to the index. It does not commit; the agent makes the initial commit after the local acceptance checks pass (PRD section 4, step 6).
 
 ### A1.6 Acceptance runs
 
@@ -283,6 +285,7 @@ A rerun is `generate` on a target that already has `project.yml`.
 - For every path the run would produce:
   - if the path is absent, the file is created;
   - if it is present with identical bytes, it is reported `same`;
+  - if it is a file of a GitHub initial commit, unchanged since that commit, it is reported `replace` and overwritten (A1.5);
   - otherwise it is reported `conflict` and left unchanged.
 
   There is no overwrite option. To regenerate a file, the user deletes it and reruns.

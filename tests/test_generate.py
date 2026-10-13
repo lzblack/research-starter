@@ -186,8 +186,10 @@ def test_target_with_other_files(template_repo: Path, answers: Path, target: Pat
 
 def test_target_repository_with_commits(template_repo: Path, answers: Path, target: Path) -> None:
     git(target, "init", "-q", "-b", "main")
-    git(target, "commit", "-q", "--allow-empty", "-m", "existing")
-    assert_refused(run(template_repo, answers, target), target, set())
+    (target / "analysis.py").write_text("print(1)\n")
+    git(target, "add", "-A")
+    git(target, "commit", "-q", "-m", "existing")
+    assert_refused(run(template_repo, answers, target), target, {"analysis.py"})
 
 
 def test_target_inside_template_checkout(template_repo: Path, answers: Path) -> None:
@@ -323,3 +325,85 @@ def test_ignored_template_files_are_not_copied(template_repo: Path, answers: Pat
     outcome = run(template_repo, answers, target)
     assert outcome.code == 0, outcome.errors
     assert not (target / "local.env").exists() and not (target / "private").exists()
+
+
+# --- A clone of a new GitHub repository (A1.5) ---------------------------------------------------
+
+GITHUB_FILES = {"README.md": "# demo\nCreated on GitHub.\n", "LICENSE": "MIT License\n", ".gitignore": "__pycache__/\n"}
+
+
+def github_clone(target: Path, files: dict[str, str] = GITHUB_FILES) -> None:
+    """The state `git clone` leaves after GitHub created the repository with its initial files."""
+    git(target, "init", "-q", "-b", "main")
+    for name, text in files.items():
+        (target / name).write_text(text)
+    git(target, "add", "-A")
+    git(target, "commit", "-q", "-m", "Initial commit")
+
+
+def test_github_initial_commit_is_completed(template_repo: Path, answers: Path, target: Path) -> None:
+    github_clone(target)
+    outcome = run(template_repo, answers, target)
+    assert outcome.code == 0, outcome.errors
+    assert verbs(outcome)["README.md"] == "replace"
+    assert (target / "README.md").read_text().startswith("# Synthetic Project\n")
+    assert (target / "LICENSE").read_text() == GITHUB_FILES["LICENSE"]
+    assert git(target, "rev-list", "--count", "HEAD") == "1"
+    assert "README.md" in git(target, "diff", "--cached", "--name-only").splitlines()
+    assert set(verbs(outcome)) <= set(git(target, "ls-files").splitlines())
+
+
+def test_github_initial_commit_dry_run(template_repo: Path, answers: Path, target: Path) -> None:
+    github_clone(target)
+    dry = run(template_repo, answers, target, dry_run=True)
+    assert dry.code == 0
+    assert verbs(dry)["README.md"] == "replace"
+    assert files_in(target) == set(GITHUB_FILES)
+    assert (target / "README.md").read_text() == GITHUB_FILES["README.md"]
+
+
+def test_github_initial_commit_rerun_after_interruption(template_repo: Path, answers: Path, target: Path) -> None:
+    github_clone(target)
+    run(template_repo, answers, target)
+    git(target, "checkout", "HEAD", "--", "README.md")
+    again = run(template_repo, answers, target)
+    assert again.code == 0, again.errors
+    assert verbs(again)["README.md"] == "replace"
+    assert (target / "README.md").read_text().startswith("# Synthetic Project\n")
+
+
+def test_github_file_edited_after_generation_is_a_conflict(template_repo: Path, answers: Path, target: Path) -> None:
+    github_clone(target)
+    run(template_repo, answers, target)
+    (target / "README.md").write_text("edited by the user\n")
+    again = run(template_repo, answers, target)
+    assert again.code == 4
+    assert verbs(again)["README.md"] == "conflict"
+    assert (target / "README.md").read_text() == "edited by the user\n"
+
+
+def test_github_initial_commit_with_other_files(template_repo: Path, answers: Path, target: Path) -> None:
+    github_clone(target, GITHUB_FILES | {"notes.txt": "existing work\n"})
+    assert_refused(run(template_repo, answers, target), target, set(GITHUB_FILES) | {"notes.txt"})
+
+
+def test_github_clone_with_a_second_commit(template_repo: Path, answers: Path, target: Path) -> None:
+    github_clone(target)
+    (target / "LICENSE").write_text("changed\n")
+    git(target, "commit", "-q", "-am", "second")
+    assert_refused(run(template_repo, answers, target), target, set(GITHUB_FILES))
+
+
+def test_github_file_with_local_changes_is_a_conflict(template_repo: Path, answers: Path, target: Path) -> None:
+    github_clone(target)
+    (target / "README.md").write_text("local edit\n")
+    outcome = run(template_repo, answers, target)
+    assert outcome.code == 4
+    assert verbs(outcome)["README.md"] == "conflict"
+    assert (target / "README.md").read_text() == "local edit\n"
+
+
+def test_github_clone_with_untracked_file(template_repo: Path, answers: Path, target: Path) -> None:
+    github_clone(target)
+    (target / "notes.txt").write_text("existing work\n")
+    assert_refused(run(template_repo, answers, target), target, set(GITHUB_FILES) | {"notes.txt"})
